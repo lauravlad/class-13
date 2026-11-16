@@ -1,4 +1,4 @@
-# Class 13 · Recap of 7.4 and 7.5
+# Class 13 · Recap
 
 Predicate logic practice for PHIL 270, about 1 hour 15 minutes:
 

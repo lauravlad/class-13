@@ -1,7 +1,7 @@
 {
   "name": "Class 13",
   "short_name": "Class 13",
-  "description": "Recap of 7.4 and 7.5: symbolization fine-tuned, identity, descriptions, and functions, with a 10-question test at the end.",
+  "description": "Recap: symbolization fine-tuned, identity, descriptions, and functions, with a 10-question test at the end.",
   "start_url": "./",
   "scope": "./",
   "display": "standalone",

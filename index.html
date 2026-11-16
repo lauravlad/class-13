@@ -603,7 +603,7 @@ const ACTS={
   rel:{kind:'rel', items:REL, name:'Properties of relations', sub:'Reflexive, symmetric, transitive', ico:'↺'},
   func:{kind:'mc', items:FUNC, name:'Functions', sub:'Functors, complex terms, substitution', ico:'f(x)'},
   term:{kind:'mc', items:TERM, name:'Kinds of terms', sub:'Simple or complex, open or closed', ico:'t'},
-  mix:{kind:'mc', items:MIX, name:'Mixed recap', sub:'New exercises from every part of 7.4 and 7.5', ico:'↻'},
+  mix:{kind:'mc', items:MIX, name:'Mixed recap', sub:'New exercises from every part', ico:'↻'},
   world2:{kind:'world', items:WORLD2, name:'True in the basket? (recap)', sub:'More identity sentences to check', ico:'🍐'},
   rel2:{kind:'rel', items:REL2, name:'Properties of relations (recap)', sub:'Four new relations', ico:'↺'},
 };
@@ -664,7 +664,7 @@ VIEWS.home = () => {
     ${symLayer(16, 7)}
     <p class="kicker">PHIL 270 · Symbolic Logic</p>
     <h1>Class 13<span class="f" aria-hidden="true">∀=</span></h1>
-    <p class="mast-tag">Recap of 7.4 and 7.5: fine-tuned symbolization, identity, definite descriptions, and functions. Everyone gets the same exercises, so we can work through them together.</p>
+    <p class="mast-tag">Recap: fine-tuned symbolization, identity, definite descriptions, and functions. Everyone gets the same exercises, so we can work through them together.</p>
     <div class="prog"><div class="prog-row"><span>${totD===totN?'All done! 🎉':'Your progress'}</span><span>${totD} of ${totN}</span></div><div class="prog-bar" role="progressbar" aria-label="Cards and exercises done" aria-valuemin="0" aria-valuemax="${totN}" aria-valuenow="${totD}"><i style="width:${Math.round(totD/totN*100)}%"></i></div></div>
     <button class="candy-cta" data-go="gameStart"><span class="candy-ico test-ico" aria-hidden="true">✓</span><span><b>Test your knowledge</b><small>10 questions on everything from today. Do it at the end.${progress.best!=null?` Your best so far: ${progress.best} of 10.`:''}</small></span><span class="go-light">Start</span></button>
   </header>
@@ -821,7 +821,7 @@ function finishGame(){
 VIEWS.gameStart = () => `${backHome}
   <div class="game-hero"><div class="big-candy test-big" aria-hidden="true">✓</div>
     <h2>Test your knowledge</h2>
-    <p>Ten new questions covering all of 7.4 and 7.5: looking for things, quantifier order, counting with identity, definite descriptions, relations, and functions.</p>
+    <p>Ten new questions covering everything: looking for things, quantifier order, counting with identity, definite descriptions, relations, and functions.</p>
   </div>
   <section class="step">
     <p class="hint">Only your first answer to each question counts. You can skip a question, but a skip counts as a miss. You’ll see an explanation after each answer and your score at the end.</p>
