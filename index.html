@@ -363,6 +363,7 @@ const DEFS1=[
   {t:'Non-referring expression', d:'A name or description that picks out nothing, like “Atlantis” or “the Lost City of Gold.”\nWhy it matters: every individual constant must name some member of the UD. A name for something that does not exist has nothing to name, so it cannot become a constant.\nWhat to do instead: build the phrase into a predicate (next card).', x:'{Sp}', xs:'Pia is searching for Atlantis. Sx: x is searching for Atlantis. Not Spa with a: Atlantis, because Atlantis is not in the UD.'},
   {t:'Embedding in a predicate', d:'Verbs like looking for, believing in, dreaming of, and hoping for can be true even when their object does not exist. Theo can look for a unicorn although there are no unicorns.\nWhy: if we write “there is a unicorn that Theo looks for,” we claim unicorns exist, so the sentence comes out false.\nWhat to do: treat the whole phrase “looking for a unicorn” as one property Theo has, and give it one predicate letter. The unicorn never has to be in the UD.', x:'{Ft}', xs:'Theo is looking for a unicorn. Fx: x is looking for a unicorn. Wrong: (∃x)(Ux & Ltx), which says a unicorn exists.'},
   {t:'How to embed, step by step', d:'1. Find the phrase about the thing that may not exist (“a unicorn,” “ghosts”).\n2. Keep the verb and that phrase together as one property (“believes in ghosts”).\n3. Make it a one-place predicate and apply it to the person.\nDo not give the missing thing its own constant or quantifier.', x:'{Bm}', xs:'Mia believes in ghosts. Bx: x believes in ghosts. Wrong: (∃x)(Gx & Bmx), which says ghosts exist.'},
+  {t:'Universal vs. existential with imaginary things', d:'An existential sentence claims that something exists. (∃x)(Ux & Hx), “some unicorn has a horn,” says there is a unicorn. With no unicorns, it is false.\nA universal sentence with ⊃ makes no existence claim. (∀x)(Ux ⊃ Hx), “every unicorn has a horn,” says: anything that is a unicorn has a horn. With no unicorns, nothing is a unicorn, so every “if” part is false and the whole sentence is true. This is called vacuously true.\nSo you can say something universal about imaginary things, but not something existential. The catch: the universal is true whatever you say about them. “Every unicorn has no horn” is true too, so it tells us nothing.', x:'True: {(∀x)(Ux ⊃ Hx)}     False: {(∃x)(Ux & Hx)}', xs:'UD: animals. Ux: x is a unicorn, Hx: x has a horn. There are no unicorns.'},
   {t:'Looking for a particular thing', d:'Sometimes the thing sought really exists, and one specific thing is meant: the painting that was stolen.\nWhy a quantifier: the painting is a real member of the UD, so we can say “there is a y such that y is the stolen painting and Ruiz is looking for y.”\nUse & inside, not ⊃. With ⊃ the sentence would be true as soon as anything is not a stolen painting.', x:'{(∃y)[(Py & Sy) & Lry]}', xs:'Detective Ruiz is looking for the painting that was stolen. Px: x is a painting, Sx: x was stolen, Lxy: x is looking for y, r: Ruiz.'},
   {t:'Nonspecific search', d:'When no particular thing is meant and any one of a kind would do, symbolize atomically, even if such things exist.\nWhy: “Pat is looking for a plumber, any plumber” is not about one specific plumber. (∃x)(Px & Lpx) would say too much: that there is a particular plumber Pat is after.\nTest: ask “which one?” If there is no answer, use a predicate.', x:'{Fp}', xs:'Pat is looking for a plumber (any plumber will do). Fx: x is looking for a plumber.'},
   {t:'Looking for every thing of a kind', d:'When every member of a kind is sought, use a universal quantifier with ⊃: each y is such that if y is a stolen painting, Ruiz is looking for y.\nUse ⊃ inside, not &. With & the sentence would say that everything is a stolen painting.', x:'{(∀y)[(Py & Sy) ⊃ Lry]}', xs:'Detective Ruiz is looking for all the stolen paintings. Px: x is a painting, Sx: x was stolen, Lxy: x is looking for y, r: Ruiz.'},
@@ -425,6 +426,27 @@ const LOOK=[
   {q:'Which phrase can safely be split into two predicates?', o:['‘tall jockey’','‘good violinist’','‘fake diamond’','‘green umbrella’'], a:3, fixed:true,
    w:['A tall jockey can be short for a person.','A good violinist need not be a good person.','A fake diamond is not a diamond at all.',''],
    e:'A green umbrella is green and is an umbrella. The meaning of ‘green’ does not depend on the noun.'},
+];
+const IKEY=[['UD','animals'],['Ux','x is a unicorn'],['Hx','x has a horn']];
+const IMAG=[
+  {q:'There are no unicorns. Is {(∀x)(Ux ⊃ Hx)} true or false?', key:IKEY, o:['True','False'], a:0, fixed:true,
+   e:'In English: “Every unicorn has a horn.” No animal is a unicorn, so for every animal the “if” part is false and the conditional is true. The universal is vacuously true and claims no unicorn exists.'},
+  {q:'There are no unicorns. Is {(∃x)(Ux & Hx)} true or false?', key:IKEY, o:['True','False'], a:1, fixed:true,
+   e:'In English: “Some unicorn has a horn.” This says there is an animal that is a unicorn and has a horn. There is none, so it is false.'},
+  {q:'There are no unicorns. Is {(∀x)(Ux ⊃ ~ Hx)} true or false?', key:IKEY, o:['True','False'], a:0, fixed:true,
+   e:'In English: “No unicorn has a horn.” Also vacuously true. With no unicorns, any universal claim about unicorns comes out true, so it tells us nothing about them.'},
+  {q:'Which sentence commits you to the existence of dragons?', key:[['UD','animals'],['Dx','x is a dragon'],['Fx','x breathes fire']],
+   o:['{(∃x)(Dx & Fx)}','{(∀x)(Dx ⊃ Fx)}','{~ (∃x)Dx}','{(∀x)(Dx ⊃ ~ Fx)}'], a:0,
+   m:['Some dragon breathes fire: there is a dragon.','Every dragon breathes fire. No existence claim: true if there are no dragons.','There are no dragons.','No dragon breathes fire. No existence claim: true if there are no dragons.'],
+   e:'Only the existential says a dragon exists. The universals are vacuously true when there are none.'},
+  {q:'Why is “Theo is looking for a unicorn” not {(∃x)(Ux & Ltx)}?', key:[['Ux','x is a unicorn'],['Lxy','x is looking for y'],['t','Theo']],
+   o:['The ∃ sentence says a unicorn exists, so it is false','Quantifiers can’t be used with two-place predicates','The UD can’t contain animals','∃ can only be used with ⊃'], a:0,
+   w:['','They can.','It can.','∃ goes with &.'],
+   e:'Theo can look for a unicorn even though none exist. The existential would wrongly make the sentence false, so use a predicate: {Ft}.'},
+  {q:'Why is {(∀x)(Ux ⊃ Ltx)} also a poor symbolization of “Theo is looking for a unicorn,” even though it makes no existence claim?', key:[['Ux','x is a unicorn'],['Lxy','x is looking for y'],['t','Theo']],
+   o:['With no unicorns it is true no matter what Theo is doing','It says unicorns exist','It is not a sentence','∀ can’t be used with ⊃'], a:0,
+   w:['','That is the ∃ version.','It is a sentence.','∀ goes with ⊃.'],
+   e:'It is vacuously true, so it would be true even if Theo were asleep. Use a predicate instead: {Ft}, Fx: x is looking for a unicorn.'},
 ];
 const ADJ=[
   {q:'Which phrase can safely be split into two predicates?', o:['‘wooden spoon’','‘big ant’','‘former mayor’','‘alleged thief’'], a:0,
@@ -602,6 +624,7 @@ const PROP_N=[], PROP_F=[];
 // ===== Activities =====
 const ACTS={
   learn1:{kind:'card', items:DEFS1, name:'Definitions: symbolization fine-tuned', sub:'Flashcards · tap to reveal', ico:'Aa', deck:'Symbolization fine-tuned'},
+  imag:{kind:'mc', items:IMAG, name:'Imaginary things: ∀ vs. ∃', sub:'Vacuous truth and existence claims', ico:'∅'},
   look:{kind:'mc', items:LOOK, name:'Things that may not exist', sub:'Seeking, believing in, dreaming of', ico:'🔍'},
   adj:{kind:'mc', items:ADJ, name:'Choosing predicates', sub:'Adjectives that split and ones that don’t', ico:'Px'},
   order:{kind:'order', items:ORDER, name:'Build the formula', sub:'Everyone, someone, and who goes first', ico:'∀∃'},
@@ -613,9 +636,9 @@ const ACTS={
 };
 const PARTS=[
   {n:0, title:'Start here: definitions', ids:['learn1'], min:10},
-  {n:1, title:'Things that may not exist', ids:['look'], min:12},
+  {n:1, title:'Things that may not exist', ids:['look','imag'], min:14},
   {n:2, title:'Choosing predicates', ids:['adj'], min:8},
-  {n:3, title:'Quantifier order', ids:['order','order2','qtruth'], min:15},
+  {n:3, title:'Quantifier order', ids:['order','order2','qtruth'], min:13},
   {n:4, title:'Moving a quantifier', ids:['move'], min:8},
   {n:5, title:'Paraphrasing complex sentences', ids:['para','eq'], min:12},
 ];
