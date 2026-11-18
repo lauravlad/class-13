@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Class 13 · Recap</title>
+<title>Class 13</title>
 <!-- Home-screen icon and full-screen mode (iPhone "Add to Home Screen", Android "Install") -->
 <link rel="icon" href="icons/icon.svg" type="image/svg+xml">
 <link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
@@ -275,6 +275,11 @@ input[type=text]:focus-visible{outline:3px solid var(--accent);outline-offset:2p
 .lock .chip{font-size:.9rem;padding:6px 14px;box-shadow:inset 0 0 0 1.5px var(--lock-line)}
 .lock .hello{margin:0;font-weight:700;color:var(--candy);letter-spacing:.02em}
 .op{font-size:1.22em;line-height:1;vertical-align:-.04em}
+.why.means{color:var(--ink);opacity:.85}
+.means-list{list-style:none;padding:0;margin:8px 0 0;display:grid;gap:6px}
+.means-list li{background:var(--soft);border-radius:10px;padding:8px 10px;line-height:1.45}
+.means-list li.ok{background:var(--good-tint)}
+.means-h{margin-top:14px}
 </style>
 </head>
 <body>
@@ -331,7 +336,7 @@ const F = s => `<span class="f">${OPS(esc(s))}</span>`;
 const fmt = t => esc(t).replace(/\\\{/g,'\u0001').replace(/\\\}/g,'\u0002').replace(/\{([^}]*)\}/g,(_,f)=>`<span class="f">${OPS(f)}</span>`).replace(/\u0001/g,'{').replace(/\u0002/g,'}');
 
 // ===== Saved progress (this browser only) =====
-const KEY='class13-ple-v1';
+const KEY='class13-fine-v1';
 function load(){ try{ return JSON.parse(localStorage.getItem(KEY))||{}; }catch(e){ return {}; } }
 function save(){ try{ localStorage.setItem(KEY, JSON.stringify(progress)); }catch(e){} }
 const progress = load();
@@ -345,38 +350,32 @@ const sc = id => { const p=progress[id]; return p?`${p.right}/${p.done}`:'0/0'; 
 
 // ===== Symbolization keys =====
 const K = {
-  basket:[['UD','things in a fruit basket'],['Ax','x is an apple'],['Px','x is a pear'],['Rx','x is rotten']],
-  family:[['UD','people'],['Dxy','x is a daughter of y'],['Mxy','x is married to y'],['Px','x is a pilot'],['k','Kim'],['r','Ray']],
-  nums:[['UD','positive integers'],['Ex','x is even'],['Ox','x is odd'],['f(x)','the successor of x'],['s(x,y)','the sum of x and y'],['a','1'],['b','2']],
+  club:[['UD','people and their pets'],['Fxy','x is a friend of y'],['Dx','x is a dog'],['Oxy','x owns y'],['Lxy','x likes y'],['a','Ana'],['b','Ben']],
+  ints:[['UD','the positive integers'],['Lxy','x is less than y']],
+  people:[['UD','people'],['Lxy','x likes y']],
 };
+const WTXT='UD: Ana, Ben, and Cara. The only facts: Ana likes Ben, Ben likes Cara, and Cara likes Ana.';
+const WKEY=[['UD','{Ana, Ben, Cara}'],['Lxy','x likes y']];
 
 // ===== Definitions (intro flashcards) =====
 const DEFS1=[
-  {t:'Non-referring expression', d:'A name or description that designates nothing, like ‘the Lost City of Gold’. It cannot be symbolized as an individual constant.'},
-  {t:'Looking for something that may not exist', d:'Build the whole activity into a one-place predicate.', x:'{Ft}', xs:'Theo is looking for a unicorn. Fx: x is looking for a unicorn'},
+  {t:'Non-referring expression', d:'A name or description that designates nothing, like ‘Atlantis’ or ‘the Lost City of Gold’. It cannot be symbolized with an individual constant, because every constant must name a member of the UD.'},
+  {t:'Embedding in a predicate', d:'When a sentence is about seeking, believing in, dreaming of, or hoping for something that may not exist, put that phrase inside a one-place predicate.', x:'{Ft}', xs:'Theo is looking for a unicorn. Fx: x is looking for a unicorn'},
   {t:'Looking for a particular thing', d:'When one specific thing exists and is being sought, use an existential quantifier with &.', x:'{(∃y)[(Py & Sy) & Lry]}', xs:'Detective Ruiz is looking for the painting that was stolen.'},
+  {t:'Nonspecific search', d:'When no particular thing is sought and any one of a kind would do, symbolize atomically, even if such things exist.', x:'{Fp}', xs:'Pat is looking for a plumber (any plumber will do). Fx: x is looking for a plumber'},
   {t:'Looking for every thing of a kind', d:'When every member of a kind is sought, use a universal quantifier with ⊃.', x:'{(∀y)[(Py & Sy) ⊃ Lry]}', xs:'Detective Ruiz is looking for all the stolen paintings.'},
-  {t:'Choosing predicates', d:'One sentence can often be symbolized with one, two, or three predicates. Choose the ones that show the connections an argument depends on.'},
-  {t:'Splitting an adjective', d:'Split an adjective off as its own predicate only when its meaning does not depend on the noun. ‘Green umbrella’ splits. ‘Small elephant’ and ‘good violinist’ do not.'},
-  {t:'Quantifier order', d:'Two quantifiers of the same type can be swapped. Mixed quantifiers cannot.', x:'{(∀x)(∃y)Lxy}   vs   {(∃y)(∀x)Lxy}', xs:'Everyone loves someone, vs. there is one person everyone loves.'},
-  {t:'Moving a quantifier', d:'A quantifier can move out over &, ∨, or into the front of a conditional’s consequent and keep its type. Out of an antecedent it flips (∀ ↔ ∃). Across ≡ it cannot move.', x:'{(∃x)Fx ⊃ Ga}  =  {(∀x)(Fx ⊃ Ga)}'},
-];
-const DEFS2=[
-  {t:'Identity predicate', d:'A two-place predicate “=” that always means “is identical to”: one and the same object. It never needs a line in the symbolization key.', x:'{a = b}     {~ a = b}', xs:'a is b.   a is not b.'},
-  {t:'At least two', d:'Two different variables do not promise two different things. Add “x is not y”.', x:'{(∃x)(∃y)[(Ax & Ay) & ~ x = y]}'},
-  {t:'Exactly one', d:'There is one, and anything of that kind is that very one.', x:'{(∃x)[Ax & (∀y)(Ay ⊃ y = x)]}'},
-  {t:'At most one', d:'Any two of them are the same. This is true even if there are none.', x:'{(∀x)(∀y)[(Ax & Ay) ⊃ x = y]}'},
-  {t:'Except', d:'Set one individual apart from all the others.', x:'{~ As & (∀y)(~ y = s ⊃ Ay)}', xs:'Everyone except Sam has read it.'},
-  {t:'Definite description', d:'“The F” claims that exactly one thing is F. “The F is G” becomes a unique existence claim. If nothing is F, or several things are, the sentence is false (not meaningless).', x:'{(∃x)[(Fx & (∀y)(Fy ⊃ y = x)) & Gx]}'},
-  {t:'Reflexive relation', d:'Everything bears the relation to itself. Example: x is the same age as y (UD: people).', x:'{(∀x)Axx}'},
-  {t:'Symmetric relation', d:'If x bears it to y, then y bears it to x. Example: x is a sibling of y.', x:'{(∀x)(∀y)(Axy ⊃ Ayx)}'},
-  {t:'Transitive relation', d:'If x bears it to y and y to z, then x bears it to z. Example: x is taller than y.', x:'{(∀x)(∀y)(∀z)[(Axy & Ayz) ⊃ Axz]}'},
-  {t:'Function and functor', d:'A function takes arguments and returns exactly one value, which must be in the UD. A functor is its symbol.', x:'{f(a) = b}', xs:'f(x): the successor of x, a: 2, b: 3. “The successor of 2 is 3.”'},
-  {t:'Complex, open, and closed terms', d:'A functor applied to terms makes a complex term. A term with no variable is closed; one with a variable is open.', x:'closed: {a} {f(a)}     open: {x} {f(x)}'},
-  {t:'Substitution instance', d:'Drop the first quantifier and replace its variable everywhere with the same closed term. A closed complex term like f(a) works too.', x:'{(∀x)Ef(x)}  →  {Ef(a)}'},
+  {t:'Choosing predicates', d:'When symbolizing several related sentences, like an argument, choose predicates that show as many logical connections as possible.', x:'{(∃x)[(Rx & Cx) & Ojx]}', xs:'Jo owns a red car, with Rx: x is red and Cx: x is a car, shows that Jo owns something red.'},
+  {t:'Adjectives that do not split', d:'Split an adjective off as its own predicate only when its meaning does not depend on the noun. ‘Wooden spoon’ splits. ‘Big ant’, ‘good violinist’, and ‘former mayor’ do not.', x:'{Ve}', xs:'Eva is a good violinist. Vx: x is a good violinist'},
+  {t:'Order of like quantifiers', d:'When a string of quantifiers are all ∀ or all ∃, their order does not matter.', x:'{(∀x)(∀y)Lxy}  =  {(∀y)(∀x)Lxy}'},
+  {t:'Order of mixed quantifiers', d:'When ∀ and ∃ are mixed, changing their order generally changes the meaning.', x:'{(∀x)(∃y)Lxy}   vs   {(∃y)(∀x)Lxy}', xs:'Positive integers, Lxy: x is less than y. Every integer is less than some integer (true), vs. some integer is greater than every integer (false).'},
+  {t:'Moving a quantifier: keeps its type', d:'A quantifier can move out over &, over ∨, or out of the consequent of ⊃ without changing, as long as no variable becomes free or captured.', x:'{Fa & (∃x)Gx}  =  {(∃x)(Fa & Gx)}'},
+  {t:'Moving a quantifier: out of an antecedent', d:'Moving a quantifier out of the antecedent of a conditional switches it: ∃ becomes ∀ and ∀ becomes ∃.', x:'{(∃x)Gx ⊃ Fa}  =  {(∀x)(Gx ⊃ Fa)}', xs:'If anyone sings, Ana sings = Everyone is such that if they sing, Ana sings.'},
+  {t:'The biconditional warning', d:'A quantifier on one side of ≡ cannot, in general, be extended over the whole biconditional.', x:'{(∀x)Fx ≡ Ga}  is not  {(∀x)(Fx ≡ Ga)}'},
+  {t:'Paraphrase into quasi-English', d:'Rewrite the sentence with ‘each x is such that’, ‘there is an x such that’, ‘if… then’, ‘and’, and ‘it is not the case that’. The paraphrase’s structure becomes the formula’s structure.', x:'{~ (∃x)[Fxa & (∃y)(Dy & Oxy)]}', xs:'None of Ana’s friends owns a dog = It is not the case that there is an x such that x is a friend of Ana and there is a y such that y is a dog and x owns y.'},
+  {t:'Negated I = E', d:'The negation of an I-sentence is equivalent to an E-sentence, so either form is a correct symbolization.', x:'{~ (∃x)(Px & Qx)}  =  {(∀x)(Px ⊃ ~ Qx)}'},
 ];
 
-// ===== Multiple-choice practice =====
+// ===== Practice =====
 const LOOK=[
   {q:'Theo is searching for a unicorn. Which is the best symbolization?', key:[['Ux','x is a unicorn'],['Sxy','x searches for y'],['t','Theo']],
    o:['{(∃x)(Ux & Stx)}','{(∀x)(Ux ⊃ Stx)}','{Ft}, where Fx: x is searching for a unicorn','{Stu}, where u: the unicorn'], a:2,
@@ -390,95 +389,80 @@ const LOOK=[
    o:['{(∃y)[(Sy & Py) & Wiy]}','{(∀y)[(Sy & Py) ⊃ Wiy]}','{(∀y)[(Sy & Py) & Wiy]}','{Wi}, where Wx: x wants a stamp'], a:1,
    w:['That says she wants at least one.','','That says everything is a Peruvian stamp.','That loses ‘every’ and ‘from Peru’.'],
    e:'Every thing of a kind is wanted, so use ∀ with ⊃.'},
+  {q:'Mia believes in ghosts. Which is the best symbolization?', key:[['Gx','x is a ghost'],['Bxy','x believes in y'],['m','Mia']],
+   o:['{Bm}, where Bx: x believes in ghosts','{(∃x)(Gx & Bmx)}','{(∀x)(Gx ⊃ Bmx)}','{Bmg}, where g: the ghosts'], a:0,
+   w:['','This says there is a ghost that Mia believes in, so it says ghosts exist.','This is true if there are no ghosts, and it says nothing about Mia’s beliefs.','A constant must name something, and ghosts may not exist.'],
+   e:'Believing in something does not make it exist, so put “believes in ghosts” inside a one-place predicate.'},
+  {q:'Noah dreams of a castle in the clouds. Which is the best symbolization?', key:[['Cx','x is a castle in the clouds'],['Dxy','x dreams of y'],['n','Noah']],
+   o:['{Fn}, where Fx: x dreams of a castle in the clouds','{(∃x)(Cx & Dnx)}','{Dnc}, where c: the castle in the clouds','{(∀x)(Cx ⊃ Dnx)}'], a:0,
+   w:['','This says such a castle exists.','There is no castle for ‘c’ to name.','This says Noah dreams of every such castle, and it is true if there are none.'],
+   e:'The castle does not exist, so the phrase goes inside the predicate.'},
+  {q:'The guard is looking for the key she dropped. Which fits?', key:[['Kx','x is a key'],['Dxy','x dropped y'],['Lxy','x is looking for y'],['g','the guard']],
+   o:['{(∃y)[(Ky & Dgy) & Lgy]}','{Fg}, where Fx: x is looking for a key','{(∀y)[(Ky & Dgy) ⊃ Lgy]}','{(∃y)[(Ky & Dgy) ⊃ Lgy]}'], a:0,
+   w:['','That loses the fact that one particular key is sought.','This does not say a dropped key exists.','∃ with ⊃ is true as soon as anything is not a key she dropped.'],
+   e:'The key exists and one particular key is sought: ∃ with &.'},
+  {q:'Pat is looking for a plumber. Any plumber will do. Which is the best symbolization?', key:[['Px','x is a plumber'],['Lxy','x is looking for y'],['p','Pat']],
+   o:['{Fp}, where Fx: x is looking for a plumber','{(∃x)(Px & Lpx)}','{(∀x)(Px ⊃ Lpx)}','{Lpb}, where b: the plumber'], a:0,
+   w:['','This says there is one particular plumber Pat is looking for.','This says Pat is looking for every plumber.','No particular plumber is meant, so there is nothing for ‘b’ to name.'],
+   e:'A nonspecific search is symbolized atomically, even though plumbers exist.'},
+  {q:'Why can’t “Atlantis” be symbolized with an individual constant?', o:['Every constant must name a member of the UD, and Atlantis does not exist','Constants can only name people','Constants cannot appear in two-place predicates','Place names always need a quantifier'], a:0,
+   w:['','Constants can name anything in the UD.','Constants can fill any place of a predicate.','Real places, like Paris, can be named by constants.'],
+   e:'A non-referring name has nothing in the UD to designate.'},
+  {q:'Rosa hopes to meet a famous author (no one in particular). Which is the best symbolization?', key:[['Ax','x is a famous author'],['Mxy','x hopes to meet y'],['r','Rosa']],
+   o:['{Hr}, where Hx: x hopes to meet a famous author','{(∃x)(Ax & Mrx)}','{(∀x)(Ax ⊃ Mrx)}','{Mra}, where a: a famous author'], a:0,
+   w:['','This says there is one particular author she hopes to meet.','This says she hopes to meet every famous author.','“A famous author” names no particular person.'],
+   e:'No particular author is meant, so symbolize atomically.'},
+  {q:'Leo is searching for every coin his grandfather hid. Which fits?', key:[['Cx','x is a coin'],['Hxy','x hid y'],['Sxy','x is searching for y'],['l','Leo'],['g','Leo’s grandfather']],
+   o:['{(∀y)[(Cy & Hgy) ⊃ Sly]}','{(∃y)[(Cy & Hgy) & Sly]}','{Fl}, where Fx: x is searching for a coin','{(∀y)[(Cy & Hgy) & Sly]}'], a:0,
+   w:['','That says he is searching for at least one.','That loses “every” and “his grandfather hid.”','∀ with &: this says everything is a hidden coin.'],
+   e:'Every thing of a kind is sought: ∀ with ⊃.'},
+  {q:'Which sentence claims that unicorns exist?', key:[['Ux','x is a unicorn'],['Sxy','x searches for y'],['t','Theo']],
+   o:['{(∃x)(Ux & Stx)}','{Ft}, where Fx: x is searching for a unicorn','{(∀x)(Ux ⊃ Stx)}','{~ (∃x)Ux}'], a:0,
+   w:['','An atomic sentence makes no claim about unicorns.','A universal with ⊃ is true if there are no unicorns.','That says there are no unicorns.'],
+   e:'{(∃x)(Ux & Stx)} says there is a unicorn that Theo searches for. That is why it is the wrong symbolization when unicorns may not exist.'},
   {q:'Which phrase can safely be split into two predicates?', o:['‘tall jockey’','‘good violinist’','‘fake diamond’','‘green umbrella’'], a:3, fixed:true,
    w:['A tall jockey can be short for a person.','A good violinist need not be a good person.','A fake diamond is not a diamond at all.',''],
    e:'A green umbrella is green and is an umbrella. The meaning of ‘green’ does not depend on the noun.'},
 ];
-const COUNT=[
-  {q:'There are at least two pears.', key:K.basket,
-   o:['{(∃x)(∃y)(Px & Py)}','{(∃x)(∃y)[(Px & Py) & ~ x = y]}','{(∀x)(∀y)[(Px & Py) ⊃ ~ x = y]}','{(∃x)(∃y)[(Px & Py) & x = y]}'], a:1,
-   w:['x and y can be the same pear, so this only says there is at least one.','','This says no pear is identical to itself, so it is false whenever there is a pear.','This says there is at least one pear.'],
-   e:'Two variables do not guarantee two things. The clause {~ x = y} does.'},
-  {q:'There is exactly one rotten apple.', key:K.basket,
-   o:['{(∃x)(Ax & Rx)}','{(∀x)(∀y)[((Ax & Rx) & (Ay & Ry)) ⊃ x = y]}','{(∃x)[(Ax & Rx) & (∀y)((Ay & Ry) ⊃ y = x)]}','{(∃x)[(Ax & Rx) & (∀y)(Ay ⊃ y = x)]}'], a:2,
-   w:['That is “at least one.”','That is “at most one.” It does not say there is one.','','This says there is only one apple of any kind.'],
-   e:'There is a rotten apple, and every rotten apple is that very one.'},
-  {q:'There is at most one pear.', key:K.basket,
-   o:['{(∃x)[Px & (∀y)(Py ⊃ y = x)]}','{(∀x)(∀y)[(Px & Py) ⊃ x = y]}','{~ (∃x)(∃y)(Px & Py)}','{(∀x)(Px ⊃ ~ Px)}'], a:1,
-   w:['That is “exactly one.” It is false if there are no pears.','','x and y may be the same pear, so this says there are no pears at all.','This says there are no pears.'],
-   e:'“At most one” does not claim that a pear exists. Any two pears you pick are the same pear.'},
-  {q:'Apple a is the only apple that is not rotten.', key:[...K.basket,['a','one particular apple']],
-   o:['{~ Ra & (∀x)(Ax ⊃ Rx)}','{(Aa & ~ Ra) & (∀x)[(Ax & ~ x = a) ⊃ Rx]}','{(Aa & ~ Ra) & (∀x)(Rx ⊃ ~ x = a)}','{(∀x)[(Ax & ~ x = a) ⊃ ~ Rx]}'], a:1,
-   w:['If a is an apple, this says a is rotten and not rotten.','','This says nothing about the other apples.','This says the other apples are not rotten.'],
-   e:'a is a fresh apple, and every other apple is rotten.'},
-  {q:'There are exactly two apples.', key:K.basket,
-   o:['{(∃x)(∃y)[(Ax & Ay) & ~ x = y]}','{(∀x)(∀y)(∀z)[((Ax & Ay) & Az) ⊃ ((x = y ∨ x = z) ∨ y = z)]}','{(∃x)(∃y)([(Ax & Ay) & ~ x = y] & (∀z)[Az ⊃ (z = x ∨ z = y)])}','{(∃x)(∃y)([(Ax & Ay) & ~ x = y] & (∀z)[Az ⊃ (z = x & z = y)])}'], a:2,
-   w:['That is “at least two.”','That is “at most two.”','','No z can equal both x and y when x and y differ, so this can never be true.'],
-   e:'At least two different apples, and any apple is one of those two.'},
+const ADJ=[
+  {q:'Which phrase can safely be split into two predicates?', o:['‘wooden spoon’','‘big ant’','‘former mayor’','‘alleged thief’'], a:0,
+   w:['','A big ant is still a small animal.','A former mayor is not a mayor now.','An alleged thief may not be a thief.'],
+   e:'A wooden spoon is wooden and is a spoon.'},
+  {q:'Which phrase should NOT be split into two predicates?', o:['‘skilled surgeon’','‘French wine’','‘square table’','‘glass bottle’'], a:0,
+   w:['','French wine is French and is wine.','A square table is square and is a table.','A glass bottle is made of glass and is a bottle.'],
+   e:'A skilled surgeon is skilled at surgery. That does not make them skilled at everything.'},
+  {q:'Sue is a 50-kilo gymnast. Which symbolization shows the most structure?', key:[['Gx','x is a gymnast'],['Kx','x weighs 50 kilos'],['s','Sue']],
+   o:['{Gs & Ks}','{Ks}','{Gs ∨ Ks}','{Gs ⊃ Ks}'], a:0,
+   w:['','That leaves out that she is a gymnast.','She is both, not just one or the other.','That says only that if she is a gymnast, she weighs 50 kilos.'],
+   e:'Fifty kilos is fifty kilos for anything, so the phrase splits.'},
+  {q:'Ed is a big ant. Which is correct?', key:[['Bx','x is big'],['Ax','x is an ant'],['e','Ed']],
+   o:['{Fe}, where Fx: x is a big ant','{Be & Ae}','{Ae}','{Be ∨ Ae}'], a:0,
+   w:['','That says Ed is big, full stop. A big ant is still tiny.','That leaves out “big.”','He is not just one or the other.'],
+   e:'“Big” here means big for an ant, so the phrase stays one predicate.'},
+  {q:'Argument: Every red car is fast. Jo owns a red car. So, Jo owns something red. Which predicates let PL show the argument is valid?', o:['Rx: x is red, Cx: x is a car, Fx: x is fast, Oxy: x owns y','Rx: x is a red car, Fx: x is fast, Oxy: x owns y','Ox: x owns a red car, Sx: x owns something red','Jx: x is Jo’s red car'], a:0, fixed:true,
+   w:['','With one predicate for “red car,” nothing connects it to “something red.”','These hide all the structure the argument needs.','This hides that the car is red and that Jo owns it.'],
+   e:'Splitting “red car” into Rx and Cx shows that a red car is red.'},
+  {q:'Jo owns a red car.', key:[['Rx','x is red'],['Cx','x is a car'],['Oxy','x owns y'],['j','Jo']],
+   o:['{(∃x)[(Rx & Cx) & Ojx]}','{(∃x)(Rx & Cx) & (∃y)Ojy}','{(∀x)[(Rx & Cx) ⊃ Ojx]}','{(∃x)[(Rx & Cx) ⊃ Ojx]}'], a:0,
+   w:['','The two halves could be about two different things.','That says Jo owns every red car.','∃ with ⊃ is true as soon as anything is not a red car.'],
+   e:'There is an x such that x is red, x is a car, and Jo owns x.'},
+  {q:'Every former mayor attended. Which is best?', key:[['Fx','x is a former mayor'],['Mx','x is a mayor'],['Ax','x attended']],
+   o:['{(∀x)(Fx ⊃ Ax)}','{(∀x)(Mx ⊃ Ax)}','{(∀x)[(Fx & Mx) ⊃ Ax]}','{(∃x)(Fx & Ax)}'], a:0,
+   w:['','That is about current mayors.','A former mayor is not a mayor now, so this does not cover them.','That says only that some former mayor attended.'],
+   e:'“Former” changes the meaning of “mayor,” so “former mayor” stays one predicate.'},
+  {q:'Why symbolize “red car” with two predicates, Rx and Cx, in the argument about Jo?', o:['So the symbolization shows that a red car is red, which the argument needs','Because one-place predicates cannot be long','Because two predicates always make an argument valid','Because PL has no adjectives'], a:0,
+   w:['','Predicates can be as long as we like.','Splitting does not make every argument valid.','Adjectives can be predicates.'],
+   e:'Choose predicates that show the logical connections the sentences depend on.'},
 ];
-const WORLD=[
-  {b:['A','A','P'], f:'(∃x)[Ax & (∀y)(Ay ⊃ y = x)]', ans:false, eng:'There is exactly one apple.', e:'There are two apples, so it is false.'},
-  {b:['A','P'], f:'(∃x)(∃y)(Ax & Ay)', ans:true, eng:'There is at least one apple.', e:'x and y can both be the one apple. No ~ x = y clause, so one apple is enough.'},
-  {b:['P','P*'], f:'(∀x)(∀y)[(Ax & Ay) ⊃ x = y]', ans:true, eng:'There is at most one apple.', e:'There are no apples, so no two apples are different. “At most one” is true.'},
-  {b:['A','A*','P*'], f:'(∃x)[(Px & Rx) & (∀y)(Py ⊃ y = x)]', ans:true, eng:'The only pear is rotten.', e:'There is exactly one pear, and it is rotten.'},
-  {b:['A*','A*','A'], f:'(∃x)(∃y)(∃z)[((Ax & Ay) & Az) & ((~ x = y & ~ y = z) & ~ x = z)]', ans:true, eng:'There are at least three apples.', e:'There are three different apples. Rotten or not, they are apples.'},
-];
-const DESC=[
-  {q:'Kim’s only daughter is a pilot.', key:K.family,
-   o:['{(∃x)(Dxk & Px)}','{(∃x)[(Dxk & (∀y)(Dyk ⊃ y = x)) & Px]}','{Pd}, where d: Kim’s only daughter','{(∀x)(Dxk ⊃ Px)}'], a:1,
-   w:['This leaves out “only.”','','A constant hides the claim that Kim has exactly one daughter.','This is true if Kim has no daughters.'],
-   e:'There is a daughter of Kim, she is Kim’s only daughter, and she is a pilot.'},
-  {q:'Ray is married to Kim’s only daughter.', key:K.family,
-   o:['{Mrk}','{(∃x)(Dxk & Mrx)}','{(∀x)[(Dxk & (∀y)(Dyk ⊃ y = x)) ⊃ Mrx]}','{(∃x)[(Dxk & (∀y)(Dyk ⊃ y = x)) & Mrx]}'], a:3,
-   w:['That says Ray is married to Kim.','This leaves out “only.”','This is true if Kim has no daughter.',''],
-   e:'A definite description becomes a unique existence claim: exactly one daughter, and Ray is married to her.'},
-  {q:'Kim has two daughters. What is the truth value of “Kim’s only daughter is a pilot”?', o:['True, if one of them is a pilot','False','Meaningless','Neither true nor false'], a:1, fixed:true,
-   e:'The uniqueness part, {(∀y)(Dyk ⊃ y = x)}, fails. So the sentence is false, not meaningless.'},
-  {q:'France has no king. Which of these is TRUE?', key:[['Kx','x is a present king of France'],['Bx','x is bald']],
-   o:['{(∃x)[(Kx & (∀y)(Ky ⊃ y = x)) & Bx]}','{(∃x)[(Kx & (∀y)(Ky ⊃ y = x)) & ~ Bx]}','{~ (∃x)[(Kx & (∀y)(Ky ⊃ y = x)) & Bx]}','{(∃x)Kx}'], a:2,
-   w:['There is no king, so “the king is bald” is false.','There is no king, so “the king is not bald” is false too.','','There is no king.'],
-   e:'This is Bertrand Russell’s famous example. “It is not the case that the king of France is bald” is true. Where the “not” goes changes the meaning.'},
-  {q:'Why symbolize “the Roman general who defeated Pompey” with identity instead of a constant r?', o:['Constants can’t name people','A constant hides that r defeated Pompey, so a valid argument looks invalid','Identity sentences are shorter','Constants can’t appear in arguments'], a:1, fixed:true,
-   e:'With identity, the description’s inner structure is visible, so we can show the conclusion follows.'},
-];
-const REL=[
-  {r:'x is taller than y', ud:'people', ans:[0,0,1], e:['No one is taller than themselves.','If x is taller than y, y is not taller than x.','Taller than taller is taller.']},
-  {r:'x lives next door to y', ud:'people', ans:[0,1,0], e:['No one lives next door to themselves.','Next door goes both ways.','Next door to next door is two houses away, not next door.']},
-  {r:'x has the same birthday as y', ud:'people', ans:[1,1,1], e:['Everyone has the same birthday as themselves.','It goes both ways.','Same as same is the same. It is an equivalence relation.']},
-  {r:'x is at least as old as y', ud:'people', ans:[1,0,1], e:['Everyone is at least as old as themselves.','An older x is at least as old as y, but not the other way around.','It chains: if x ≥ y and y ≥ z in age, then x ≥ z.']},
-];
-const PROP_N=['Reflexive','Symmetric','Transitive'];
-const PROP_F=['(∀x)Axx','(∀x)(∀y)(Axy ⊃ Ayx)','(∀x)(∀y)(∀z)[(Axy & Ayz) ⊃ Axz]'];
-const FUNC=[
-  {q:'The successor of every odd number is even.', key:K.nums,
-   o:['{(∀x)(Ef(x) ⊃ Ox)}','{(∀x)(Ox ⊃ Ef(x))}','{(∃x)(Ox & Ef(x))}','{(∀x)(Ox ⊃ f(Ex))}'], a:1,
-   w:['This reverses the conditional.','','That says only some odd number’s successor is even.','{f(Ex)} is not a term: a functor takes terms, not formulas.'],
-   e:'{f(x)} is a term, so it goes where a name would go: {Ef(x)} says “the successor of x is even.”'},
-  {q:'What does {(∀x)Es(x,x)} say, and is it true?', key:K.nums,
-   o:['The sum of any number with itself is even. True.','Every number is even. False.','The sum of any number with itself is even. False.','Some sum is even. True.'], a:0, fixed:true,
-   e:'{s(x,x)} is x + x, which is always even.'},
-  {q:'1 is not the successor of any positive integer.', key:K.nums,
-   o:['{~ a = f(a)}','{~ (∃x) a = f(x)}','{~ (∃x) f(a) = x}','{(∀x) ~ f(x) = f(a)}'], a:1,
-   w:['That only says 1 is not the successor of 1.','','That says the successor of 1 is not any integer.','That says nothing has the same successor as 1.'],
-   e:'There is no x whose successor is 1. Equivalently {(∀x) ~ a = f(x)}.'},
-  {q:'Why can’t “x minus y” be a functor when the UD is the positive integers?', o:['Functors can’t take two arguments','Its value is not always in the UD: 2 minus 5 = −3','It gives two values for each pair','Minus is not a function at all'], a:1, fixed:true,
-   e:'The value of a function must be a member of the UD. Subtraction works when the UD is all integers.'},
-  {q:'Which is a substitution instance of {(∀x)(Ex ⊃ Of(x))}?', key:K.nums,
-   o:['{Ey ⊃ Of(y)}','{Ef(a) ⊃ Of(a)}','{Ef(a) ⊃ Of(f(a))}','{(∀x)(Ef(a) ⊃ Of(f(a)))}'], a:2,
-   w:['y is a variable. Only closed terms can instantiate.','Every x must be replaced by the same term.','','The quantifier must be dropped.'],
-   e:'{f(a)} is a closed term, so it can replace every x.'},
-];
-const TERMS=[['f(a)',1,1],['h(x,b)',1,0],['y',0,0],['g(f(a),c)',1,1]];
-const TERM=TERMS.map(([t,cx,cl])=>({q:`What kind of term is {${t}}?`, o:['Simple and closed','Simple and open','Complex and closed','Complex and open'], a:cx*2+(cl?0:1), fixed:true,
-  e:`${cx?'It is built from a functor, so it is complex.':'It has no functor, so it is simple.'} ${cl?'It has no variable, so it is closed.':'It contains a variable, so it is open.'}`}));
-
-// ===== Quantifier order (from the earlier class) =====
 const VERBS=[{L:'L', vs:'likes', pp:'liked'}, {L:'T', vs:'trusts', pp:'trusted'}, {L:'A', vs:'admires', pp:'admired'}, {L:'K', vs:'knows', pp:'known'}];
 const RS = (q1,q2,ord,on=0,n2=0,n3=0)=>({on,q1,n2,q2,n3,ord});
 const ORDER=[
   {v:0, say:v=>`Everyone ${v.vs} someone.`, st:RS('∀','∃','xy'), e:v=>`Each person x ${v.vs} some y or other. Different people may pick different ys, so (∀x) comes first.`},
   {v:2, say:v=>`There is someone whom everyone ${v.vs}.`, st:RS('∃','∀','yx'), e:v=>`One person x is such that every y ${v.vs} x. So (∃x) comes first and x goes in the second place.`},
   {v:3, say:v=>`No one ${v.vs} everyone.`, st:RS('∃','∀','xy',1), e:v=>`It is not the case that someone ${v.vs} everyone. (∀x)(∃y)~${v.L}xy is an equivalent way to write it.`},
+  {v:1, say:v=>`Everyone is ${v.pp} by someone.`, st:RS('∀','∃','yx'), e:v=>`Each person x has some y or other who ${v.vs} x. So (∀x) comes first and x goes in the second place.`},
+  {v:0, say:v=>`Someone ${v.vs} no one.`, st:RS('∃','∀','xy',0,0,1), e:v=>`There is an x such that, for every y, it is not the case that x ${v.vs} y.`},
+  {v:2, say:v=>`No one is ${v.pp} by everyone.`, st:RS('∃','∀','yx',1), e:v=>`It is not the case that some x is ${v.pp} by every y. (∀x)(∃y)~${v.L}yx is an equivalent way to write it.`},
 ];
 const PEOPLE=['Ana','Ben','Cy'];
 function evalRel(st,n,Rl){
@@ -495,125 +479,143 @@ function relCounter(a,b){
   return null;
 }
 const ordStr = (st,L) => `${st.on?'~':''}(${st.q1||'?'}x)${st.n2?'~':''}(${st.q2||'?'}y)${st.n3?'~':''}${L}${st.ord||'??'}`;
-// ===== Move a quantifier =====
+const ORDER2=[
+  {q:'Every positive integer is less than some positive integer.', key:K.ints,
+   o:['{(∀x)(∃y)Lxy}','{(∃y)(∀x)Lxy}','{(∀x)(∃y)Lyx}','{(∃x)(∀y)Lxy}'], a:0,
+   w:['','That says one integer is greater than every integer.','That says every integer has a smaller one.','That says some integer is less than every integer, including itself.'],
+   e:'Each x has some y or other that x is less than.'},
+  {q:'In the positive integers, is {(∃y)(∀x)Lxy} true or false?', key:K.ints, o:['True','False'], a:1, fixed:true,
+   e:'It says some integer is greater than every integer, including itself. No integer is greater than itself, so it is false.'},
+  {q:'In the positive integers, is {(∀x)(∃y)Lxy} true or false?', key:K.ints, o:['True','False'], a:0, fixed:true,
+   e:'Every integer is less than some integer: x + 1 always works. Same quantifiers as the last one, different order, different truth value.'},
+  {q:'Are {(∀x)(∀y)(Fx ⊃ Gy)} and {(∀y)(∀x)(Fx ⊃ Gy)} equivalent?', o:['Yes, because both quantifiers are ∀','No, because quantifier order always matters','No, because the variables are in different places','Only if the UD is finite'], a:0,
+   w:['','Order matters only when ∀ and ∃ are mixed.','The variables are in the same places in both.','Swapping like quantifiers works in every UD.'],
+   e:'A string of like quantifiers can be put in any order.'},
+  {q:'Are {(∃x)(∀y)Lxy} and {(∀y)(∃x)Lxy} equivalent?', o:['No: the first is stronger','Yes: they use the same quantifiers','Yes: the variables are in the same places','No: the second is stronger'], a:0,
+   w:['','Same quantifiers in a different order can mean different things.','The order of the quantifiers changed.','If one x likes every y, then every y is liked by someone, so the first implies the second, not the other way.'],
+   e:'The first says one person likes everyone. The second says everyone is liked by someone, maybe a different person each time.'},
+  {q:'Everyone knows someone who knows everyone.', key:[['UD','people'],['Kxy','x knows y']],
+   o:['{(∀x)(∃y)[Kxy & (∀z)Kyz]}','{(∃y)(∀x)[Kxy & (∀z)Kyz]}','{(∀x)(∃y)Kxy & (∀z)Kyz}','{(∀x)(∀z)(∃y)(Kxy & Kyz)}'], a:0,
+   w:['','That says there is one person everyone knows who knows everyone. That is stronger.','The y in {Kyz} is outside the scope of (∃y), so it is free.','That only says each x is linked to each z through someone, maybe a different someone for each z.'],
+   e:'Each x is such that there is a y such that x knows y and y knows every z.'},
+  {q:'Which English sentence does {(∀y)(∃x)Lxy} say?', key:K.people,
+   o:['Everyone is liked by someone.','Someone likes everyone.','Everyone likes someone.','Someone is liked by everyone.'], a:0,
+   w:['','That would be {(∃x)(∀y)Lxy}.','That would be {(∀x)(∃y)Lxy}.','That would be {(∃y)(∀x)Lxy}.'],
+   e:'Each y has some x or other who likes y.'},
+  {q:'Which English sentence does {(∃x)(∃y)(Lxy & ~ Lyx)} say?', key:K.people,
+   o:['Someone likes a person who does not like them back.','No one likes anyone back.','Everyone likes someone who does not like them back.','Someone does not like anyone.'], a:0,
+   w:['','That would need ∀ and a negation in front.','That would start with ∀.','That would be {(∃x)(∀y) ~ Lxy}.'],
+   e:'There are x and y such that x likes y and y does not like x.'},
+];
+const QTRUTH=[
+  ['(∀x)(∃y)Lxy',1,'Each person likes someone: Ana likes Ben, Ben likes Cara, Cara likes Ana.'],
+  ['(∃y)(∀x)Lxy',0,'No one is liked by all three people.'],
+  ['(∀y)(∃x)Lxy',1,'Each person is liked by someone.'],
+  ['(∃x)(∀y)Lxy',0,'No one likes all three people.'],
+  ['(∃x)Lxx',0,'No one likes themself.'],
+  ['(∀x)(∀y)(Lxy ⊃ ~ Lyx)',1,'No two people like each other back.'],
+].map(([f,t,e])=>({q:`${WTXT} Is {${f}} true or false?`, key:WKEY, o:['True','False'], a:t?0:1, fixed:true, e}));
 const MOVE=[
   {s:'Fa ⊃ (∀x)Gx', ans:'∀', res:'(∀x)(Fa ⊃ Gx)', why:'The quantifier is in the consequent, so it keeps its type.'},
   {s:'(∃x)Gx ⊃ Hb', ans:'∀', res:'(∀x)(Gx ⊃ Hb)', why:'The quantifier is in the antecedent, so it flips: ∃ becomes ∀. Compare ‘If anyone sings, Ana sings’: it means ‘Everyone is such that if they sing, Ana sings.’'},
   {s:'(∃x)Gx ≡ Fc', ans:'none', res:null, why:'A quantifier on one side of ≡ can’t, in general, be moved over the whole biconditional.'},
+  {s:'Fa & (∃x)Gx', ans:'∃', res:'(∃x)(Fa & Gx)', why:'Over & the quantifier keeps its type.'},
+  {s:'(∀x)Gx ⊃ Hb', ans:'∃', res:'(∃x)(Gx ⊃ Hb)', why:'Out of an antecedent the quantifier flips: ∀ becomes ∃.'},
+  {s:'(∀x)Fx ∨ Ga', ans:'∀', res:'(∀x)(Fx ∨ Ga)', why:'Over ∨ the quantifier keeps its type.'},
+  {s:'Ha ⊃ (∃x)Fx', ans:'∃', res:'(∃x)(Ha ⊃ Fx)', why:'The quantifier is in the consequent, so it keeps its type.'},
+  {s:'(∀x)Fx ≡ Gb', ans:'none', res:null, why:'Across ≡ a quantifier can’t, in general, be moved.'},
+  {s:'(∃x)Fx & Gc', ans:'∃', res:'(∃x)(Fx & Gc)', why:'Over & the quantifier keeps its type.'},
+  {s:'Gb ∨ (∀x)Fx', ans:'∀', res:'(∀x)(Gb ∨ Fx)', why:'Over ∨ the quantifier keeps its type.'},
 ];
-
-// ===== Mixed recap (new exercises) =====
-K.help=[['UD','people'],['Hxy','x helps y']];
-K.search=[['UD','people and things'],['Cx','x is a car'],['Sx','x was stolen'],['Lxy','x is looking for y'],['p','the police']];
-const MIX=[
-  {q:'Lena is looking for a four-leaf clover. (She would be happy with any one.) Which is the best symbolization?', key:[['Cx','x is a four-leaf clover'],['Lxy','x is looking for y'],['l','Lena']],
-   o:['{Fl}, where Fx: x is looking for a four-leaf clover','{(∃x)(Cx & Llx)}','{(∀x)(Cx ⊃ Llx)}','{Llc}, where c: the clover'], a:0,
-   w:['','This says there is a particular clover she is looking for.','This says she is looking for every four-leaf clover.','No particular clover is being sought, so there is nothing for ‘c’ to name.'],
-   e:'No particular clover is sought, and there may be none, so build “looking for a four-leaf clover” into a one-place predicate.'},
-  {q:'The police are looking for the car that was stolen. Which fits?', key:K.search,
-   o:['{(∃y)[(Cy & Sy) & Lpy]}','{(∀y)[(Cy & Sy) ⊃ Lpy]}','{Fp}, where Fx: x is looking for a car','{(∃y)[(Cy & Sy) ⊃ Lpy]}'], a:0,
-   w:['','That does not say a stolen car exists.','That loses the fact that one particular car is sought.','∃ with ⊃ is true as soon as anything is not a stolen car.'],
-   e:'A particular stolen car exists and is being sought, so use ∃ with &.'},
-  {q:'Which phrase can safely be split into two predicates?', o:['‘red apple’','‘former senator’','‘alleged thief’','‘big mouse’'], a:0,
-   w:['','A former senator is not a senator now.','An alleged thief may not be a thief.','A big mouse is still a small animal.'],
-   e:'A red apple is red and is an apple. The meaning of ‘red’ does not depend on the noun.'},
-  {q:'Someone helps everyone.', key:K.help,
-   o:['{(∃x)(∀y)Hxy}','{(∀y)(∃x)Hxy}','{(∀x)(∃y)Hxy}','{(∃x)(∀y)Hyx}'], a:0,
-   w:['','That says everyone is helped by someone, maybe a different helper each time.','That says everyone helps someone.','That says someone is helped by everyone.'],
-   e:'One person x is such that x helps every y, so (∃x) comes first.'},
-  {q:'Everyone is helped by someone.', key:K.help,
-   o:['{(∀x)(∃y)Hyx}','{(∃y)(∀x)Hyx}','{(∀x)(∃y)Hxy}','{(∃x)(∀y)Hxy}'], a:0,
-   w:['','That says one person helps everyone.','That says everyone helps someone.','That says someone helps everyone.'],
-   e:'Each x has some y or other who helps x.'},
-  {q:'Which sentence is equivalent to {(∀x)Fx ⊃ Ga}?', o:['{(∃x)(Fx ⊃ Ga)}','{(∀x)(Fx ⊃ Ga)}','{(∃x)Fx ⊃ Ga}','It can’t be moved'], a:0,
-   w:['','Out of an antecedent the quantifier flips, so ∀ cannot stay ∀.','That changes “everything” to “something” but leaves the quantifier inside the antecedent.','It can be moved, but it flips.'],
-   e:'The quantifier is in the antecedent, so it flips: ∀ becomes ∃.'},
-  {q:'Which sentence is equivalent to {Fa ∨ (∃x)Gx}?', o:['{(∃x)(Fa ∨ Gx)}','{(∀x)(Fa ∨ Gx)}','{(∃x)Fa ∨ Gx}','It can’t be moved'], a:0,
-   w:['','Over ∨ the quantifier keeps its type.','Here x in {Gx} is left free.','A quantifier can move out over ∨.'],
-   e:'Over &, ∨, or into the consequent of ⊃, a quantifier keeps its type.'},
-  {q:'There are at least two rotten apples.', key:K.basket,
-   o:['{(∃x)(∃y)[((Ax & Rx) & (Ay & Ry)) & ~ x = y]}','{(∃x)(∃y)[(Ax & Rx) & (Ay & Ry)]}','{(∀x)(∀y)[((Ax & Rx) & (Ay & Ry)) ⊃ x = y]}','{(∃x)[(Ax & Rx) & (∀y)((Ay & Ry) ⊃ y = x)]}'], a:0,
-   w:['','x and y can be the same apple, so this only says there is at least one.','That is “at most one.”','That is “exactly one.”'],
-   e:'Two rotten apples, and {~ x = y} makes them different.'},
-  {q:'There is at most one rotten pear.', key:K.basket,
-   o:['{(∀x)(∀y)[((Px & Rx) & (Py & Ry)) ⊃ x = y]}','{(∃x)[(Px & Rx) & (∀y)((Py & Ry) ⊃ y = x)]}','{(∃x)(∃y)[((Px & Rx) & (Py & Ry)) & ~ x = y]}','{~ (∃x)(Px & Rx)}'], a:0,
-   w:['','That is “exactly one.” It is false if there are no rotten pears.','That is “at least two.”','That says there are none.'],
-   e:'Any two rotten pears you pick are the same pear. This is true even if there are none.'},
-  {q:'Everyone except Ray is a pilot.', key:K.family,
-   o:['{~ Pr & (∀x)(~ x = r ⊃ Px)}','{(∀x)(~ x = r ⊃ Px)}','{~ Pr & (∀x)Px}','{(∀x)(Px ⊃ ~ x = r)}'], a:0,
-   w:['','This leaves open whether Ray is a pilot.','The second half makes Ray a pilot too, so this can never be true.','That only says Ray is not a pilot.'],
-   e:'Ray is not a pilot, and everyone who is not Ray is a pilot.'},
-  {q:'Kim is the only pilot.', key:K.family,
-   o:['{Pk & (∀x)(Px ⊃ x = k)}','{Pk}','{(∀x)(Px ⊃ x = k)}','{Pk & (∀x)(x = k ⊃ Px)}'], a:0,
-   w:['','That leaves out “only.”','That does not say Kim is a pilot. It is true if there are no pilots.','The second half adds nothing: it only says Kim is a pilot again.'],
-   e:'Kim is a pilot, and any pilot is Kim.'},
-  {q:'The person married to Kim is a pilot.', key:K.family,
-   o:['{(∃x)[(Mxk & (∀y)(Myk ⊃ y = x)) & Px]}','{(∃x)(Mxk & Px)}','{(∀x)(Mxk ⊃ Px)}','{Ps}, where s: Kim’s spouse'], a:0,
-   w:['','This leaves out that exactly one person is married to Kim.','This is true if no one is married to Kim.','A constant hides the claim that exactly one person is married to Kim.'],
-   e:'A definite description: exactly one person is married to Kim, and that person is a pilot.'},
-  {q:'Kim has exactly one daughter.', key:K.family,
-   o:['{(∃x)[Dxk & (∀y)(Dyk ⊃ y = x)]}','{(∃x)Dxk}','{(∀x)(∀y)[(Dxk & Dyk) ⊃ x = y]}','{(∃x)(∃y)[(Dxk & Dyk) & ~ x = y]}'], a:0,
-   w:['','That is “at least one.”','That is “at most one.”','That is “at least two.”'],
-   e:'Kim has a daughter, and every daughter of Kim is that one.'},
-  {q:'Kim has no daughters. What is the truth value of “Kim’s daughter is a pilot”?', o:['True','False','Meaningless','Neither true nor false'], a:1, fixed:true,
-   e:'The existence part, {(∃x)Dxk}, fails. So the sentence is false, not meaningless.'},
-  {q:'The sum of 1 and 2 is odd.', key:K.nums,
-   o:['{Os(a,b)}','{s(Oa,Ob)}','{Oa & Ob}','{O(a,b)}'], a:0,
-   w:['','A functor takes terms, not formulas.','That says 1 and 2 are both odd.','O is a one-place predicate, so it takes one term.'],
-   e:'{s(a,b)} is a term for 1 + 2, so it goes where a name would go.'},
-  {q:'The successor of every even number is odd.', key:K.nums,
-   o:['{(∀x)(Ex ⊃ Of(x))}','{(∀x)(Of(x) ⊃ Ex)}','{(∃x)(Ex & Of(x))}','{(∀x)(Ex ⊃ f(Ox))}'], a:0,
-   w:['','This reverses the conditional.','That says only some even number has an odd successor.','{f(Ox)} is not a term: a functor takes terms, not formulas.'],
-   e:'{Of(x)} says “the successor of x is odd.”'},
-  {q:'2 is the successor of 1.', key:K.nums,
-   o:['{b = f(a)}','{a = f(b)}','{f(a) = f(b)}','{Eb & f(a)}'], a:0,
-   w:['','That says 1 is the successor of 2.','That says 1 and 2 have the same successor.','{f(a)} is a term, not a sentence, so it cannot be joined with &.'],
-   e:'b is 2 and {f(a)} is the successor of 1, so the identity {b = f(a)} says they are the same number.'},
-  {q:'Which is a substitution instance of {(∀x)Es(x,x)}?', key:K.nums,
-   o:['{Es(b,b)}','{Es(a,b)}','{Es(x,x)}','{(∀x)Es(b,b)}'], a:0,
-   w:['','Every x must be replaced by the same term.','x is a variable. Only closed terms can instantiate.','The quantifier must be dropped.'],
-   e:'Drop the quantifier and replace every x with the same closed term.'},
-  {q:'What kind of term is {s(x,a)}?', o:['Simple and closed','Simple and open','Complex and closed','Complex and open'], a:3, fixed:true,
-   e:'It is built from a functor, so it is complex. It contains the variable x, so it is open.'},
+const PARA=[
+  {q:'None of Ana’s friends owns a dog.', key:K.club,
+   o:['{~ (∃x)[Fxa & (∃y)(Dy & Oxy)]}','{(∃x)[Fxa & ~ (∃y)(Dy & Oxy)]}','{~ (∃x)[Fxa & (∀y)(Dy ⊃ Oxy)]}','{(∀x)[Fxa ⊃ (∃y)(Dy & Oxy)]}'], a:0,
+   w:['','That says some friend of Ana owns no dog.','That says no friend of Ana owns every dog.','That says every friend of Ana owns a dog.'],
+   e:'It is not the case that there is an x such that x is Ana’s friend and x owns some dog.'},
+  {q:'Every friend of Ben likes some dog.', key:K.club,
+   o:['{(∀x)[Fxb ⊃ (∃y)(Dy & Lxy)]}','{(∃y)[Dy & (∀x)(Fxb ⊃ Lxy)]}','{(∀x)[Fxb & (∃y)(Dy & Lxy)]}','{(∀x)[Fxb ⊃ (∃y)(Dy ⊃ Lxy)]}'], a:0,
+   w:['','That says there is one dog every friend of Ben likes. That is stronger.','∀ with &: this says everyone is a friend of Ben.','∃ with ⊃ inside is true as soon as something is not a dog.'],
+   e:'Each friend of Ben likes some dog or other.'},
+  {q:'Anyone who owns a dog likes Ana.', key:K.club,
+   o:['{(∀x)[(∃y)(Dy & Oxy) ⊃ Lxa]}','{(∃x)[(∃y)(Dy & Oxy) & Lxa]}','{(∀x)(∃y)[(Dy & Oxy) & Lxa]}','{(∀x)[Lxa ⊃ (∃y)(Dy & Oxy)]}'], a:0,
+   w:['','That says only that some dog owner likes Ana.','That says everyone owns a dog and likes Ana.','This reverses the conditional.'],
+   e:'Each x is such that if x owns a dog, x likes Ana. {(∀x)(∀y)[(Dy & Oxy) ⊃ Lxa]} is also correct.'},
+  {q:'Ana is a friend of everyone who is a friend of Ben.', key:K.club,
+   o:['{(∀x)(Fxb ⊃ Fax)}','{(∀x)(Fax ⊃ Fxb)}','{(∀x)(Fbx ⊃ Fxa)}','{(∀x)(Fxb & Fax)}'], a:0,
+   w:['','This reverses the conditional.','The places are swapped in both halves.','∀ with &: this says everyone is a friend of Ben.'],
+   e:'Each x is such that if x is a friend of Ben, Ana is a friend of x.'},
+  {q:'Some dog is liked by every friend of Ana.', key:K.club,
+   o:['{(∃y)[Dy & (∀x)(Fxa ⊃ Lxy)]}','{(∀x)[Fxa ⊃ (∃y)(Dy & Lxy)]}','{(∃y)[Dy ⊃ (∀x)(Fxa ⊃ Lxy)]}','{(∃y)[Dy & (∀x)(Fxa & Lxy)]}'], a:0,
+   w:['','That says each friend likes some dog, maybe different dogs.','∃ with ⊃ is true as soon as something is not a dog.','∀ with &: this says everyone is a friend of Ana.'],
+   e:'There is one dog y, and each friend of Ana likes y.'},
+  {q:'No one who owns a dog likes every dog.', key:K.club,
+   o:['{~ (∃x)[(∃y)(Dy & Oxy) & (∀z)(Dz ⊃ Lxz)]}','{(∀x)[(∃y)(Dy & Oxy) ⊃ ~ (∃z)(Dz & Lxz)]}','{~ (∃x)(∃y)[(Dy & Oxy) & Lxy]}','{(∃x)[(∃y)(Dy & Oxy) & ~ (∀z)(Dz ⊃ Lxz)]}'], a:0,
+   w:['','That says no dog owner likes any dog.','That says no one likes a dog they own.','That says only that some dog owner does not like every dog.'],
+   e:'It is not the case that some dog owner likes every dog.'},
+  {q:'Which English sentence does {(∀x)[Dx ⊃ (∃y)Oyx]} say?', key:K.club,
+   o:['Every dog is owned by someone.','Everyone owns a dog.','Someone owns every dog.','Every dog owns something.'], a:0,
+   w:['','That would be {(∀x)(∃y)(Dy & Oxy)}.','That would put (∃y) first.','In {Oyx}, y is the owner and x is the dog.'],
+   e:'Each x is such that if x is a dog, there is a y that owns x.'},
+  {q:'Which English sentence does {~ (∃x)(Fxa & Fxb)} say?', key:K.club,
+   o:['No one is a friend of both Ana and Ben.','Ana and Ben are not friends.','Some friend of Ana is not a friend of Ben.','Ana has no friends, and Ben has no friends.'], a:0,
+   w:['','That would be {~ Fab}.','That would be {(∃x)(Fxa & ~ Fxb)}.','The formula only rules out shared friends.'],
+   e:'It is not the case that someone is a friend of Ana and a friend of Ben.'},
+  {q:'If any friend of Ana owns a dog, Ben does.', key:K.club,
+   o:['{(∃x)[Fxa & (∃y)(Dy & Oxy)] ⊃ (∃y)(Dy & Oby)}','{(∀x)[Fxa ⊃ (∃y)(Dy & Oxy)] ⊃ (∃y)(Dy & Oby)}','{(∃x)[Fxa & (∃y)(Dy & Oxy)] & (∃y)(Dy & Oby)}','{(∃x)[(Fxa & (∃y)(Dy & Oxy)) ⊃ (∃y)(Dy & Oby)]}'], a:0,
+   w:['','That says “if every friend of Ana owns a dog.”','The main connective is ⊃, not &.','∃ with ⊃ is true as soon as one person is not a dog-owning friend of Ana.'],
+   e:'The whole sentence is a conditional whose “if” part says some friend of Ana owns a dog.'},
+  {q:'Ben owns every dog that Ana likes.', key:K.club,
+   o:['{(∀x)[(Dx & Lax) ⊃ Obx]}','{(∀x)[(Dx & Obx) ⊃ Lax]}','{(∃x)[(Dx & Lax) & Obx]}','{(∀x)[Dx ⊃ (Lax & Obx)]}'], a:0,
+   w:['','That says Ana likes every dog Ben owns.','That says only that Ben owns some dog Ana likes.','That says Ana likes every dog and Ben owns every dog.'],
+   e:'Each x is such that if x is a dog and Ana likes x, Ben owns x.'},
 ];
-const WORLD2=[
-  {b:['A','P','P'], f:'(∃x)(∃y)[(Px & Py) & ~ x = y]', ans:true, eng:'There are at least two pears.', e:'There are two different pears.'},
-  {b:['A*','A*','P'], f:'(∀x)(Ax ⊃ Rx)', ans:true, eng:'Every apple is rotten.', e:'Both apples are rotten. The pear does not matter.'},
-  {b:['A','A*','P'], f:'(∃x)[(Ax & ~ Rx) & (∀y)((Ay & ~ Ry) ⊃ y = x)]', ans:true, eng:'There is exactly one fresh apple.', e:'One apple is fresh, and the other apple is rotten.'},
-  {b:['P','P','P'], f:'(∀x)(∀y)[(Px & Py) ⊃ x = y]', ans:false, eng:'There is at most one pear.', e:'There are three different pears.'},
-  {b:['A','P*'], f:'(∃x)[(Px & (∀y)(Py ⊃ y = x)) & ~ Rx]', ans:false, eng:'The only pear is not rotten.', e:'There is exactly one pear, but it is rotten.'},
+const EQ=[
+  {q:'Which sentence is equivalent to {~ (∃x)[Fxa & (∃y)(Dy & Oxy)]}?', key:K.club,
+   o:['{(∀x)[Fxa ⊃ ~ (∃y)(Dy & Oxy)]}','{(∀x)[Fxa ⊃ (∃y)(Dy & ~ Oxy)]}','{(∃x)[Fxa & ~ (∃y)(Dy & Oxy)]}','{(∀x)[~ Fxa ⊃ (∃y)(Dy & Oxy)]}'], a:0,
+   w:['','That says each friend of Ana fails to own some dog.','That says only that some friend owns no dog.','That says everyone who is not Ana’s friend owns a dog.'],
+   e:'A negated I-sentence is equivalent to an E-sentence: no friend of Ana owns a dog.'},
+  {q:'Which sentence is equivalent to {~ (∃x)(Dx & Lax)}?', key:K.club,
+   o:['{(∀x)(Dx ⊃ ~ Lax)}','{(∃x)(Dx & ~ Lax)}','{(∀x)(~ Dx ⊃ Lax)}','{~ (∀x)(Dx ⊃ Lax)}'], a:0,
+   w:['','That says only that Ana does not like some dog.','That says Ana likes everything that is not a dog.','That says Ana does not like every dog.'],
+   e:'“Ana likes no dog”: every dog is such that Ana does not like it.'},
+  {q:'Which sentence is equivalent to {~ (∀x)(Dx ⊃ Lbx)}?', key:K.club,
+   o:['{(∃x)(Dx & ~ Lbx)}','{(∀x)(Dx ⊃ ~ Lbx)}','{(∃x)(Dx ⊃ ~ Lbx)}','{~ (∃x)(Dx & Lbx)}'], a:0,
+   w:['','That says Ben likes no dog.','∃ with ⊃ is true as soon as something is not a dog.','That also says Ben likes no dog.'],
+   e:'“Ben does not like every dog” = some dog is such that Ben does not like it.'},
+  {q:'Which is NOT a correct symbolization of “None of Ben’s friends likes Ana”?', key:K.club,
+   o:['{(∀x)(Fxb & ~ Lxa)}','{~ (∃x)(Fxb & Lxa)}','{(∀x)(Fxb ⊃ ~ Lxa)}','{(∀x)(Lxa ⊃ ~ Fxb)}'], a:0,
+   w:['','','',''],
+   e:'∀ with & says everyone is a friend of Ben. The other three are all equivalent and correct.'},
+  {q:'Which sentence is equivalent to {(∀x)(∃y) ~ Lxy}?', key:K.people,
+   o:['{~ (∃x)(∀y)Lxy}','{~ (∀x)(∃y)Lxy}','{(∃x)(∀y) ~ Lxy}','{~ (∃y)(∀x)Lxy}'], a:0,
+   w:['','That says not everyone likes someone.','That says someone likes no one.','That says no one is liked by everyone.'],
+   e:'Both say no one likes everyone: each person fails to like someone.'},
+  {q:'Which sentence is equivalent to {~ (∃x)(∃y)Lxy}?', key:K.people,
+   o:['{(∀x)(∀y) ~ Lxy}','{(∃x)(∃y) ~ Lxy}','{(∀x)(∃y) ~ Lxy}','{~ (∀x)(∀y)Lxy}'], a:0,
+   w:['','That says someone fails to like someone.','That says everyone fails to like someone.','That says not everyone likes everyone.'],
+   e:'“No one likes anyone”: for every x and y, x does not like y.'},
 ];
-const REL2=[
-  {r:'x is a sibling of y', ud:'people', ans:[0,1,0], e:['No one is their own sibling.','If x is a sibling of y, y is a sibling of x.','Ana is Ben’s sibling and Ben is Ana’s, but Ana is not her own sibling.']},
-  {r:'x is less than or equal to y', ud:'positive integers', ans:[1,0,1], e:['Every number is less than or equal to itself.','2 ≤ 3, but 3 is not ≤ 2.','If x ≤ y and y ≤ z, then x ≤ z.']},
-  {r:'x is an ancestor of y', ud:'people', ans:[0,0,1], e:['No one is their own ancestor.','If x is an ancestor of y, y is not an ancestor of x.','An ancestor of an ancestor is an ancestor.']},
-  {r:'x lives in the same city as y', ud:'people', ans:[1,1,1], e:['Everyone lives in the same city as themselves.','It goes both ways.','Same as same is the same. It is an equivalence relation.']},
-];
+const PROP_N=[], PROP_F=[];
 
 // ===== Activities =====
 const ACTS={
-  learn1:{kind:'card', items:DEFS1, name:'Definitions: fine-tuned symbolization', sub:'Flashcards · tap to reveal', ico:'Aa', deck:'Fine-tuned symbolization'},
-  learn2:{kind:'card', items:DEFS2, name:'Definitions: identity, descriptions, functions', sub:'Flashcards · tap to reveal', ico:'=', deck:'Identity, descriptions, functions'},
-  look:{kind:'mc', items:LOOK, name:'Looking for things', sub:'Things that may not exist, and splitting adjectives', ico:'🔍'},
-  order:{kind:'order', items:ORDER, name:'Quantifier order', sub:'Everyone, someone, and who goes first', ico:'∀∃'},
+  learn1:{kind:'card', items:DEFS1, name:'Definitions: symbolization fine-tuned', sub:'Flashcards · tap to reveal', ico:'Aa', deck:'Symbolization fine-tuned'},
+  look:{kind:'mc', items:LOOK, name:'Things that may not exist', sub:'Seeking, believing in, dreaming of', ico:'🔍'},
+  adj:{kind:'mc', items:ADJ, name:'Choosing predicates', sub:'Adjectives that split and ones that don’t', ico:'Px'},
+  order:{kind:'order', items:ORDER, name:'Build the formula', sub:'Everyone, someone, and who goes first', ico:'∀∃'},
+  order2:{kind:'mc', items:ORDER2, name:'Like and mixed quantifiers', sub:'When order matters', ico:'⇅'},
+  qtruth:{kind:'mc', items:QTRUTH, name:'True in the club?', sub:'Same quantifiers, different order, different truth', ico:'T/F'},
   move:{kind:'move', items:MOVE, name:'Move a quantifier', sub:'Keeps its type, flips, or can’t move', ico:'⇄'},
-  count:{kind:'mc', items:COUNT, name:'Counting with identity', sub:'At least, exactly, at most, except', ico:'#'},
-  world:{kind:'world', items:WORLD, name:'True in the basket?', sub:'Check identity sentences against a fruit basket', ico:'🍎'},
-  desc:{kind:'mc', items:DESC, name:'Definite descriptions', sub:'“The F is G” as a unique existence claim', ico:'the'},
-  rel:{kind:'rel', items:REL, name:'Properties of relations', sub:'Reflexive, symmetric, transitive', ico:'↺'},
-  func:{kind:'mc', items:FUNC, name:'Functions', sub:'Functors, complex terms, substitution', ico:'f(x)'},
-  term:{kind:'mc', items:TERM, name:'Kinds of terms', sub:'Simple or complex, open or closed', ico:'t'},
-  mix:{kind:'mc', items:MIX, name:'Mixed recap', sub:'New exercises from every part', ico:'↻'},
-  world2:{kind:'world', items:WORLD2, name:'True in the basket? (recap)', sub:'More identity sentences to check', ico:'🍐'},
-  rel2:{kind:'rel', items:REL2, name:'Properties of relations (recap)', sub:'Four new relations', ico:'↺'},
+  para:{kind:'mc', items:PARA, name:'Paraphrase complex sentences', sub:'Friends, dogs, and nested quantifiers', ico:'¶'},
+  eq:{kind:'mc', items:EQ, name:'Equivalent forms', sub:'Negated I = E, and other equivalents', ico:'='},
 };
 const PARTS=[
-  {n:0, title:'Start here: definitions', ids:['learn1','learn2'], min:8},
-  {n:1, title:'Fine-tuned symbolization', ids:['look','order','move'], min:11},
-  {n:2, title:'Identity and counting', ids:['count','world'], min:11},
-  {n:3, title:'Descriptions and relations', ids:['desc','rel'], min:10},
-  {n:4, title:'Functions and terms', ids:['func','term'], min:7},
-  {n:5, title:'Mixed recap', ids:['mix','world2','rel2'], min:18},
+  {n:0, title:'Start here: definitions', ids:['learn1'], min:10},
+  {n:1, title:'Things that may not exist', ids:['look'], min:12},
+  {n:2, title:'Choosing predicates', ids:['adj'], min:8},
+  {n:3, title:'Quantifier order', ids:['order','order2','qtruth'], min:15},
+  {n:4, title:'Moving a quantifier', ids:['move'], min:8},
+  {n:5, title:'Paraphrasing complex sentences', ids:['para','eq'], min:12},
 ];
 const ALL_IDS=PARTS.flatMap(p=>p.ids);
 const nOf = id => ACTS[id].items.length;
@@ -663,8 +665,8 @@ VIEWS.home = () => {
   <header class="mast">
     ${symLayer(16, 7)}
     <p class="kicker">PHIL 270 · Symbolic Logic</p>
-    <h1>Class 13<span class="f" aria-hidden="true">∀=</span></h1>
-    <p class="mast-tag">Recap: fine-tuned symbolization, identity, definite descriptions, and functions. Everyone gets the same exercises, so we can work through them together.</p>
+    <h1>Class 13<span class="f" aria-hidden="true">∀∃</span></h1>
+    <p class="mast-tag">Symbolization fine-tuned: things that may not exist, choosing predicates, quantifier order, moving quantifiers, and paraphrasing. Everyone gets the same exercises, so we can work through them together.</p>
     <div class="prog"><div class="prog-row"><span>${totD===totN?'All done! 🎉':'Your progress'}</span><span>${totD} of ${totN}</span></div><div class="prog-bar" role="progressbar" aria-label="Cards and exercises done" aria-valuemin="0" aria-valuemax="${totN}" aria-valuenow="${totD}"><i style="width:${Math.round(totD/totN*100)}%"></i></div></div>
     <button class="candy-cta" data-go="gameStart"><span class="candy-ico test-ico" aria-hidden="true">✓</span><span><b>Test your knowledge</b><small>10 questions on everything from today. Do it at the end.${progress.best!=null?` Your best so far: ${progress.best} of 10.`:''}</small></span><span class="go-light">Start</span></button>
   </header>
@@ -673,7 +675,7 @@ VIEWS.home = () => {
     <ol>${PARTS.map(p=>`<li><b>${p.title}</b> · about ${p.min} min</li>`).join('')}<li><b>Test your knowledge</b> · about 10 min</li></ol>
   </section>
   <ol class="levels">${PARTS.map(part).join('')}</ol>
-  <p class="reset-row"><a class="reset" href="sheets/class-13-practice-sheet.pdf" target="_blank" rel="noopener">Printable practice sheet (PDF)</a> · <button class="reset" data-act="reset">Start over</button></p>`;
+  <p class="reset-row"><button class="reset" data-act="reset">Start over</button></p>`;
 };
 
 // ===== Activity views =====
@@ -683,7 +685,7 @@ function mcBody(it){
   const L='ABCD';
   const btns=e.opt.map((oi,pos)=>{ let c='choice'; const after=e.pickd!==null;
     if(after){ if(oi===it.a) c+=' right'; else if(oi===e.pickd) c+=' wrong'; }
-    const why = after && it.w && it.w[oi] && oi!==it.a && (oi===e.pickd) ? `<span class="why">${fmt(it.w[oi])}</span>` : '';
+    const why = !after ? '' : (it.m && it.m[oi]) ? `<span class="why means">${oi===it.a?'✓':'✗'} Means: ${fmt(it.m[oi])}</span>` : (it.w && it.w[oi] && oi!==it.a) ? `<span class="why">${fmt(it.w[oi])}</span>` : '';
     return `<button class="${c}" data-mc="${oi}" ${after?'disabled':''}><b>${L[pos]}</b>${fmt(it.o[oi])}${why}</button>`; }).join('');
   const ok=e.pickd===it.a;
   return `<p class="prop">${fmt(it.q)}</p>${keyHTML(it.key)}
@@ -745,13 +747,16 @@ const BODY={
       <div class="actions"><button class="btn" data-act="check-order" ${!ready||e.result?.ok?'disabled':''}>Check</button></div>${res}</section>`;
   },
   move(it){
-    const e=cur;
-    const opts=[['∀','(∀x)'],['∃','(∃x)'],['none','It can’t be moved']].map(([v,l])=>{ let c='choice'; if(e.pickd!==null){ if(v===it.ans) c+=' right'; else if(v===e.pickd) c+=' wrong'; } return `<button class="${c}" data-move="${v}" ${e.pickd!==null?'disabled':''}>${v==='none'?l:F(l)}</button>`; }).join('');
-    return `<div class="formula">${esc(it.s).replace(/ /g,'&nbsp;')}</div>
+    const e=cur, done=e.pickd!==null;
+    const opts=[['∀','(∀x)'],['∃','(∃x)'],['none','It can’t be moved']].map(([v,l])=>{ let c='choice'; if(done){ if(v===it.ans) c+=' right'; else if(v===e.pickd) c+=' wrong'; } return `<button class="${c}" data-move="${v}" ${done?'disabled':''}>${v==='none'?l:F(l)}</button>`; }).join('');
+    const means = done && it.say ? `<ul class="means-list">${[['∀','(∀x)'],['∃','(∃x)'],['none','It can’t be moved']].map(([v,l])=>{ const r=it[v]; return `<li class="${v===it.ans?'ok':'no'}"><b>${v===it.ans?'✓':'✗'}</b> ${v==='none'?`<b>${esc(l)}:</b> ${esc(it.none)}`:`${F(r[0])}: ${esc(r[1])}`}</li>`; }).join('')}</ul>` : '';
+    return `${it.key?`<div class="key"><span>${esc(it.key)}</span></div>`:''}<div class="formula">${esc(it.s).replace(/ /g,'&nbsp;')}</div>
+    ${it.say?`<p class="muted">In English: “${esc(it.say)}”</p>`:''}
     <section class="step"><h3>Extend the quantifier over the whole sentence</h3>
       <p class="hint">Which quantifier does the equivalent sentence start with?</p>
       <div class="choices three">${opts}</div>
-      ${e.pickd!==null?fb(e.pickd===it.ans, e.pickd===it.ans?'Correct.':(it.ans==='none'?'It can’t be moved.':`It becomes ${F('('+it.ans+'x)')}.`), (it.res?` Equivalent sentence: ${F(it.res)}. `:' ')+esc(it.why)):''}
+      ${done?fb(e.pickd===it.ans, e.pickd===it.ans?'Correct.':(it.ans==='none'?'It can’t be moved.':`It becomes ${F('('+it.ans+'x)')}.`), (it.res?` Equivalent sentence: ${F(it.res)}. `:' ')+esc(it.why)):''}
+      ${means?`<h3 class="means-h">What each choice would say</h3>${means}`:''}
     </section>`;
   },
 };
@@ -774,22 +779,104 @@ VIEWS.done = () => {
 
 // ===== Test your knowledge (10 questions at the end) =====
 const TEST=[
-  {tag:'mix', q:'Omar is looking for a perfect partner. (No particular person.) Which is the best symbolization?', key:[['Px','x is a perfect partner'],['Lxy','x is looking for y'],['o','Omar']],
-   o:['{Fo}, where Fx: x is looking for a perfect partner','{(∃x)(Px & Lox)}','{(∀x)(Px ⊃ Lox)}','{Lop}, where p: the perfect partner'], a:0, e:'No particular person is sought, and there may be none, so use a one-place predicate.'},
-  {tag:'mix', q:'UD: people. Hxy: x helps y. Which says “Everyone helps someone”?', o:['{(∀x)(∃y)Hxy}','{(∃y)(∀x)Hxy}','{(∃x)(∀y)Hxy}','{(∀x)(∃y)Hyx}'], a:0, e:'Each x helps some y or other, so (∀x) comes first.'},
-  {tag:'mix', q:'Which sentence is equivalent to {Ga ⊃ (∀x)Fx}?', o:['{(∀x)(Ga ⊃ Fx)}','{(∃x)(Ga ⊃ Fx)}','{(∀x)Ga ⊃ Fx}','It can’t be moved'], a:0, e:'The quantifier is in the consequent, so it keeps its type.'},
-  {tag:'count', q:'There are exactly two pears.', key:K.basket,
-   o:['{(∃x)(∃y)([(Px & Py) & ~ x = y] & (∀z)[Pz ⊃ (z = x ∨ z = y)])}','{(∃x)(∃y)[(Px & Py) & ~ x = y]}','{(∀x)(∀y)(∀z)[((Px & Py) & Pz) ⊃ ((x = y ∨ x = z) ∨ y = z)]}','{(∃x)(∃y)[(Px & Py) & (∀z)(Pz ⊃ z = x)]}'], a:0, e:'At least two different pears, and any pear is one of those two.'},
-  {tag:'mix', q:'Everyone except Kim is a pilot.', key:K.family,
-   o:['{~ Pk & (∀x)(~ x = k ⊃ Px)}','{(∀x)(~ x = k ⊃ Px)}','{~ Pk & (∀x)Px}','{(∀x)(Px ⊃ ~ x = k)}'], a:0, e:'Kim is not a pilot, and everyone who is not Kim is.'},
-  {tag:'desc', q:'The pilot is married to Ray.', key:K.family,
-   o:['{(∃x)[(Px & (∀y)(Py ⊃ y = x)) & Mrx]}','{(∃x)(Px & Mrx)}','{(∀x)(Px ⊃ Mrx)}','{Mrp}, where p: the pilot'], a:0, e:'Exactly one thing is a pilot, and Ray is married to it.'},
-  {tag:'rel2', q:'Which relation (UD: people) is symmetric but not transitive?', o:['x is taller than y','x is a sibling of y','x is the same age as y','x is an ancestor of y'], a:1, fixed:true, e:'Siblings go both ways, but x and y being siblings does not make x their own sibling.'},
-  {tag:'func', q:'The sum of any two odd numbers is even.', key:K.nums,
-   o:['{(∀x)(∀y)[(Ox & Oy) ⊃ Es(x,y)]}','{(∀x)(∀y)[(Ox & Oy) & Es(x,y)]}','{(∃x)(∃y)[(Ox & Oy) & Es(x,y)]}','{(∀x)(∀y)[Es(x,y) ⊃ (Ox & Oy)]}'], a:0, e:'Each x and y: if both are odd, their sum is even.'},
-  {tag:'world2', q:'A basket holds one apple and two pears. Is {(∃x)(∃y)[(Ax & Ay) & ~ x = y]} true or false?', o:['True','False'], a:1, fixed:true, e:'It says there are at least two apples. There is only one.'},
-  {tag:'term', q:'What kind of term is {f(y)}?', o:['Simple and closed','Simple and open','Complex and closed','Complex and open'], a:3, fixed:true, e:'It is built from a functor, so it is complex. It contains the variable y, so it is open.'},
+  {tag:'look', q:'Zoe is looking for a mermaid. Which is the best symbolization?', key:[['Mx','x is a mermaid'],['Lxy','x is looking for y'],['z','Zoe']],
+   o:['{Fz}, where Fx: x is looking for a mermaid','{(∃x)(Mx & Lzx)}','{(∀x)(Mx ⊃ Lzx)}','{Lzm}, where m: the mermaid'], a:0, e:'Mermaids do not exist, so the phrase goes inside a one-place predicate.'},
+  {tag:'look', q:'Officer Kim is looking for the dog that bit the mail carrier.', key:[['Dx','x is a dog'],['Bx','x bit the mail carrier'],['Lxy','x is looking for y'],['k','Officer Kim']],
+   o:['{(∃y)[(Dy & By) & Lky]}','{Fk}, where Fx: x is looking for a dog','{(∀y)[(Dy & By) ⊃ Lky]}','{(∃y)[(Dy & By) ⊃ Lky]}'], a:0, e:'One particular dog exists and is sought: ∃ with &.'},
+  {tag:'adj', q:'Which phrase should NOT be split into two predicates?', o:['‘tiny whale’','‘glass bottle’','‘Italian car’','‘round table’'], a:0, e:'A tiny whale is tiny for a whale, which is still huge.'},
+  {tag:'order', q:'UD: people. Hxy: x helps y. Which says “There is someone whom everyone helps”?', o:['{(∃y)(∀x)Hxy}','{(∀x)(∃y)Hxy}','{(∃x)(∀y)Hxy}','{(∀y)(∃x)Hxy}'], a:0, e:'One y is such that every x helps y, so (∃y) comes first.'},
+  {tag:'order2', q:'UD: positive integers. Lxy: x is less than y. Is {(∀x)(∃y)Lyx} true or false?', o:['True','False'], a:1, fixed:true, e:'It says every integer has a smaller one. Nothing is less than 1.'},
+  {tag:'move', q:'Which sentence is equivalent to {(∀x)Fx ⊃ Gb}?', o:['{(∃x)(Fx ⊃ Gb)}','{(∀x)(Fx ⊃ Gb)}','{(∃x)Fx ⊃ Gb}','It can’t be moved'], a:0, e:'Out of an antecedent the quantifier flips: ∀ becomes ∃.'},
+  {tag:'move', q:'Which sentence is equivalent to {(∃x)Fx ≡ Ga}?', o:['{(∃x)(Fx ≡ Ga)}','{(∀x)(Fx ≡ Ga)}','Neither of these: it can’t, in general, be moved','Both of these'], a:2, fixed:true, e:'A quantifier on one side of ≡ cannot, in general, be extended over the whole biconditional.'},
+  {tag:'para', q:'None of Ben’s friends owns a dog.', key:K.club,
+   o:['{~ (∃x)[Fxb & (∃y)(Dy & Oxy)]}','{(∃x)[Fxb & ~ (∃y)(Dy & Oxy)]}','{(∀x)[Fxb ⊃ (∃y)(Dy & Oxy)]}','{~ (∀x)[Fxb ⊃ (∃y)(Dy & Oxy)]}'], a:0, e:'It is not the case that some friend of Ben owns a dog.'},
+  {tag:'eq', q:'Which sentence is equivalent to {~ (∃x)(Fxa & Lxb)}?', key:K.club,
+   o:['{(∀x)(Fxa ⊃ ~ Lxb)}','{(∃x)(Fxa & ~ Lxb)}','{(∀x)(~ Fxa ⊃ Lxb)}','{~ (∀x)(Fxa ⊃ Lxb)}'], a:0, e:'A negated I-sentence is equivalent to an E-sentence: no friend of Ana likes Ben.'},
+  {tag:'qtruth', q:`${WTXT} Is {(∃y)(∀x)Lxy} true or false?`, key:WKEY, o:['True','False'], a:1, fixed:true, e:'No one is liked by all three people.'},
 ];
+// ===== What each choice means (shown after answering) =====
+const M=(arr,list)=>list.forEach((m,i)=>{ if(m) arr[i].m=m; });
+M(LOOK,[
+  ['There is a unicorn, and Theo searches for it.','Theo searches for every unicorn there is (true if there are none).','Theo is unicorn-searching. No unicorn needs to exist.','Theo searches for one particular unicorn named u.'],
+  ['There is a stolen painting, and Ruiz is looking for it.','Ruiz is painting-hunting, with no particular painting in mind.','Ruiz is looking for every stolen painting.','Something is such that, if it is a stolen painting, Ruiz looks for it. True as soon as anything is not a stolen painting.'],
+  ['There is a stamp from Peru that Ines wants.','Ines wants every stamp from Peru.','Everything is a stamp from Peru, and Ines wants it.','Ines is stamp-wanting.'],
+  ['Mia is a ghost-believer. No ghost needs to exist.','There is a ghost, and Mia believes in it.','Mia believes in every ghost there is (true if there are none).','Mia believes in one particular thing named g.'],
+  ['Noah is a castle-in-the-clouds dreamer.','There is a castle in the clouds, and Noah dreams of it.','Noah dreams of one particular castle named c.','Noah dreams of every castle in the clouds (true if there are none).'],
+  ['There is a key the guard dropped, and she is looking for it.','The guard is key-hunting, with no particular key in mind.','The guard is looking for every key she dropped.','Something is such that, if it is a key she dropped, she looks for it.'],
+  ['Pat is plumber-hunting. Any plumber will do.','There is one particular plumber Pat is looking for.','Pat is looking for every plumber.','Pat is looking for one particular plumber named b.'],
+  null,
+  ['Rosa is author-hoping, with no particular author in mind.','There is a particular famous author Rosa hopes to meet.','Rosa hopes to meet every famous author.','Rosa hopes to meet one particular person named a.'],
+  ['For each coin his grandfather hid, Leo searches for it.','There is a coin his grandfather hid, and Leo searches for it.','Leo is coin-searching.','Everything is a coin his grandfather hid, and Leo searches for it.'],
+  ['There is a unicorn that Theo searches for.','Theo is unicorn-searching.','Theo searches for every unicorn (true if there are none).','There are no unicorns.'],
+]);
+M(ADJ,[null,null,
+  ['Sue is a gymnast, and Sue weighs 50 kilos.','Sue weighs 50 kilos.','Sue is a gymnast, or Sue weighs 50 kilos.','If Sue is a gymnast, Sue weighs 50 kilos.'],
+  ['Ed is a big ant: big for an ant.','Ed is big (full stop), and Ed is an ant.','Ed is an ant.','Ed is big, or Ed is an ant.'],
+  null,
+  ['There is a red car, and Jo owns it.','Something is a red car, and Jo owns something.','Jo owns every red car.','Something is such that, if it is a red car, Jo owns it.'],
+  ['Every former mayor attended.','Every current mayor attended.','Everyone who is both a former mayor and a current mayor attended.','Some former mayor attended.'],
+]);
+M(ORDER2,[
+  ['Every integer is less than some integer.','Some integer is greater than every integer.','Every integer is greater than some integer.','Some integer is less than every integer.'],
+  null,null,null,null,
+  ['Everyone knows someone who knows everyone.','There is one person whom everyone knows, and that person knows everyone.','Not a sentence: the y in Kyz is free.','For any two people x and z, there is someone whom x knows and who knows z.'],
+]);
+M(PARA,[
+  ['No friend of Ana owns a dog.','Some friend of Ana owns no dog.','No friend of Ana owns every dog.','Every friend of Ana owns a dog.'],
+  ['Every friend of Ben likes some dog or other.','There is one dog that every friend of Ben likes.','Everyone is a friend of Ben and likes some dog.','Every friend of Ben has something that, if it is a dog, they like.'],
+  ['Every dog owner likes Ana.','Some dog owner likes Ana.','Everyone owns a dog and likes Ana.','Everyone who likes Ana owns a dog.'],
+  ['Ana is a friend of every friend of Ben.','Every friend of Ana is a friend of Ben.','Everyone whom Ben is a friend of is a friend of Ana.','Everyone is a friend of Ben, and Ana is a friend of everyone.'],
+  ['There is one dog that every friend of Ana likes.','Every friend of Ana likes some dog or other.','Something is such that, if it is a dog, every friend of Ana likes it.','There is a dog, and everyone is a friend of Ana who likes it.'],
+  ['No dog owner likes every dog.','Dog owners like no dogs at all.','No one likes a dog they own.','Some dog owner does not like every dog.'],
+  null,null,
+  ['If some friend of Ana owns a dog, Ben owns a dog.','If every friend of Ana owns a dog, Ben owns a dog.','Some friend of Ana owns a dog, and Ben owns a dog.','Someone is such that, if they are a dog-owning friend of Ana, Ben owns a dog.'],
+  ['Ben owns every dog that Ana likes.','Ana likes every dog that Ben owns.','Ben owns some dog that Ana likes.','Ana likes every dog, and Ben owns every dog.'],
+]);
+M(EQ,[
+  ['Every friend of Ana owns no dog. (Same as the original: no friend of Ana owns a dog.)','Every friend of Ana fails to own some dog.','Some friend of Ana owns no dog.','Everyone who is not Ana’s friend owns a dog.'],
+  ['Ana likes no dog. (Same as the original.)','There is a dog Ana does not like.','Ana likes everything that is not a dog.','Ana does not like every dog.'],
+  ['Some dog is not liked by Ben. (Same as the original: Ben does not like every dog.)','Ben likes no dog.','Something is such that, if it is a dog, Ben does not like it.','Ben likes no dog.'],
+  ['Everyone is a friend of Ben, and no one likes Ana.','No friend of Ben likes Ana.','Every friend of Ben does not like Ana.','Everyone who likes Ana is not a friend of Ben.'],
+  ['No one likes everyone. (Same as the original: everyone fails to like someone.)','Not everyone likes someone.','Someone likes no one.','No one is liked by everyone.'],
+  ['No one likes anyone. (Same as the original.)','Someone fails to like someone.','Everyone fails to like someone.','Not everyone likes everyone.'],
+]);
+// abstract questions get a concrete reading
+ORDER2[3].key=[['Fx','x is a fish'],['Gy','y is green']];
+ORDER2[3].e='Both say: for anything x and anything y, if x is a fish then y is green. A string of like quantifiers can be put in any order.';
+ORDER2[4].key=K.people;
+ORDER2[4].e='The first says one person likes everyone. The second says everyone is liked by someone, maybe a different person each time. The first implies the second, not the other way around.';
+const QENG={'(∀x)(∃y)Lxy':'Everyone likes someone.','(∃y)(∀x)Lxy':'Someone is liked by everyone.','(∀y)(∃x)Lxy':'Everyone is liked by someone.','(∃x)(∀y)Lxy':'Someone likes everyone.','(∃x)Lxx':'Someone likes themself.','(∀x)(∀y)(Lxy ⊃ ~ Lyx)':'No one likes someone who likes them back.'};
+QTRUTH.forEach(it=>{ const f=it.q.match(/\{([^}]*)\}/)[1]; it.e=`In English: “${QENG[f]}” ${it.e}`; });
+// moving a quantifier: a concrete key, the English, and what each choice would mean
+const MKEY='Fx: x sings · Gx: x dances · Hx: x hums · a: Ana · b: Ben · c: Cara';
+const MX=[
+  {say:'If Ana sings, everyone dances.', '∀':['(∀x)(Fa ⊃ Gx)','Everyone is such that, if Ana sings, they dance. Same meaning.'], '∃':['(∃x)(Fa ⊃ Gx)','Someone is such that, if Ana sings, they dance. Much weaker: one dancer is enough.'], none:'It can be moved: out of a consequent it keeps its type.'},
+  {say:'If anyone dances, Ben hums.', '∀':['(∀x)(Gx ⊃ Hb)','Everyone is such that, if they dance, Ben hums. Same meaning.'], '∃':['(∃x)(Gx ⊃ Hb)','Someone is such that, if they dance, Ben hums. True as soon as one person does not dance.'], none:'It can be moved, but it flips.'},
+  {say:'Someone dances if and only if Cara sings.', '∀':['(∀x)(Gx ≡ Fc)','Each person dances exactly when Cara sings. Different: it says all or nobody dances.'], '∃':['(∃x)(Gx ≡ Fc)','Someone dances exactly when Cara sings. Different: true if Cara does not sing and one person does not dance, even if others dance.'], none:'Right: neither moved version says the same thing.'},
+  {say:'Ana sings, and someone dances.', '∃':['(∃x)(Fa & Gx)','Someone is such that Ana sings and they dance. Same meaning.'], '∀':['(∀x)(Fa & Gx)','Ana sings, and everyone dances. Stronger.'], none:'It can be moved: over & it keeps its type.'},
+  {say:'If everyone dances, Ben hums.', '∃':['(∃x)(Gx ⊃ Hb)','Someone is such that, if they dance, Ben hums. Same meaning: either someone does not dance or Ben hums.'], '∀':['(∀x)(Gx ⊃ Hb)','If anyone dances, Ben hums. Stronger.'], none:'It can be moved, but it flips.'},
+  {say:'Everyone sings, or Ana dances.', '∀':['(∀x)(Fx ∨ Ga)','Everyone is such that they sing or Ana dances. Same meaning.'], '∃':['(∃x)(Fx ∨ Ga)','Someone sings, or Ana dances. Weaker.'], none:'It can be moved: over ∨ it keeps its type.'},
+  {say:'If Ana hums, someone sings.', '∃':['(∃x)(Ha ⊃ Fx)','Someone is such that, if Ana hums, they sing. Same meaning.'], '∀':['(∀x)(Ha ⊃ Fx)','If Ana hums, everyone sings. Stronger.'], none:'It can be moved: out of a consequent it keeps its type.'},
+  {say:'Everyone sings if and only if Ben dances.', '∀':['(∀x)(Fx ≡ Gb)','Each person sings exactly when Ben dances. Different: if Ben does not dance, this says no one sings.'], '∃':['(∃x)(Fx ≡ Gb)','Someone sings exactly when Ben dances. Different and much weaker.'], none:'Right: neither moved version says the same thing.'},
+  {say:'Someone sings, and Cara dances.', '∃':['(∃x)(Fx & Gc)','Someone is such that they sing and Cara dances. Same meaning.'], '∀':['(∀x)(Fx & Gc)','Everyone sings, and Cara dances. Stronger.'], none:'It can be moved: over & it keeps its type.'},
+  {say:'Ben dances, or everyone sings.', '∀':['(∀x)(Gb ∨ Fx)','Everyone is such that Ben dances or they sing. Same meaning.'], '∃':['(∃x)(Gb ∨ Fx)','Ben dances, or someone sings. Weaker.'], none:'It can be moved: over ∨ it keeps its type.'},
+];
+MOVE.forEach((it,i)=>Object.assign(it,{key:MKEY},MX[i]));
+// test
+const TK=[['Fx','x sings'],['Gx','x dances'],['a','Ana'],['b','Ben']];
+TEST[5].key=TK; TEST[6].key=TK;
+M(TEST,[
+  ['Zoe is mermaid-hunting. No mermaid needs to exist.','There is a mermaid Zoe is looking for.','Zoe is looking for every mermaid (true if there are none).','Zoe is looking for one particular thing named m.'],
+  ['There is a dog that bit the mail carrier, and Kim is looking for it.','Kim is dog-hunting, with no particular dog in mind.','Kim is looking for every dog that bit the mail carrier.','Something is such that, if it is a dog that bit the mail carrier, Kim looks for it.'],
+  null,
+  ['Someone is helped by everyone.','Everyone helps someone.','Someone helps everyone.','Everyone is helped by someone.'],
+  null,
+  ['Someone is such that, if they sing, Ben dances. Same as: if everyone sings, Ben dances.','If anyone sings, Ben dances.','If someone sings, Ben dances.','It can be moved, but it flips.'],
+  ['Someone sings exactly when Ana dances.','Everyone sings exactly when Ana dances.','Right: neither says “someone sings if and only if Ana dances.”','The two are not equivalent to each other.'],
+  ['No friend of Ben owns a dog.','Some friend of Ben owns no dog.','Every friend of Ben owns a dog.','Not every friend of Ben owns a dog.'],
+  ['No friend of Ana likes Ben.','Some friend of Ana does not like Ben.','Everyone who is not Ana’s friend likes Ben.','Not every friend of Ana likes Ben.'],
+]);
+
 let game=null, lastGame=null;
 function gameRecord(ok){
   if(!game||game.answered) return;
@@ -821,7 +908,7 @@ function finishGame(){
 VIEWS.gameStart = () => `${backHome}
   <div class="game-hero"><div class="big-candy test-big" aria-hidden="true">✓</div>
     <h2>Test your knowledge</h2>
-    <p>Ten new questions covering everything: looking for things, quantifier order, counting with identity, definite descriptions, relations, and functions.</p>
+    <p>Ten questions on everything from today: things that may not exist, choosing predicates, quantifier order, moving quantifiers, and paraphrasing.</p>
   </div>
   <section class="step">
     <p class="hint">Only your first answer to each question counts. You can skip a question, but a skip counts as a miss. You’ll see an explanation after each answer and your score at the end.</p>
@@ -891,9 +978,9 @@ function cuteBg(n=22){
 VIEWS.lock = () => `
   ${cuteBg()}
   <div class="lock">
-    <div class="tile" aria-hidden="true">∀=</div>
+    <div class="tile" aria-hidden="true">∀∃</div>
     <h1>Class 13</h1>
-    <p class="sub">Recap: symbolization fine-tuned, identity, descriptions, and functions.</p>
+    <p class="sub">Symbolization fine-tuned.</p>
     <form id="code-form" class="code-form" novalidate>
       <label for="class-code" class="hint">Enter the class code your teacher gave you</label>
       <input type="text" id="class-code" autocomplete="off" autocapitalize="off" spellcheck="false" maxlength="30" placeholder="• • • • • • •" ${codeError?'aria-invalid="true" aria-describedby="code-err"':''}>
